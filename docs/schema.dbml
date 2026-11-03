@@ -1,0 +1,71 @@
+// ---------- 엔티티 ----------
+
+// 사용자
+Table members {
+  id bigint
+}
+
+// 차량
+Table cars {
+  id bigint
+}
+
+// 카풀 크루
+Table crews {
+  id bigint
+}
+
+// 장소 (아파트 정문, 회사 등)
+Table places {
+  id bigint
+}
+
+// ---------- 관계 ----------
+
+// 멤버가 차를 소유하거나 운전함
+Table member_cars {
+  id bigint
+  member_id bigint [ref: > members.id]
+  car_id bigint [ref: > cars.id]
+}
+
+// 멤버가 크루에 참여함
+Table crew_members {
+  id bigint
+  crew_id bigint [ref: > crews.id]
+  member_id bigint [ref: > members.id]
+}
+
+// 멤버가 저장한 장소 (집, 회사)
+Table member_places {
+  id bigint
+  member_id bigint [ref: > members.id]
+  place_id bigint [ref: > places.id]
+}
+
+// 크루가 멤버의 차로 운행함
+Table trips {
+  id bigint
+  crew_id bigint [ref: > crews.id]
+  member_car_id bigint [ref: > member_cars.id]
+}
+
+// 크루 멤버가 운행에 탑승함
+Table boardings {
+  id bigint
+  trip_id bigint [ref: > trips.id]
+  crew_member_id bigint [ref: > crew_members.id]
+}
+
+// 크루 안에서 동승자가 운전자에게 비용을 분담하는 관계 (쌍마다 1행)
+Table crew_member_pairs {
+  id bigint
+  payer_id bigint [ref: > crew_members.id]
+  payee_id bigint [ref: > crew_members.id]
+}
+
+// 정산에서 크루 멤버가 다른 크루 멤버에게 낼 금액 (그 관계의 월별 영수증)
+Table receipts {
+  id bigint
+  crew_member_pair_id bigint [ref: > crew_member_pairs.id]
+}

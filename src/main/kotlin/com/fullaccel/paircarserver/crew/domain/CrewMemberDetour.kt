@@ -55,4 +55,28 @@ class CrewMemberDetour(
     // Odometer 실측 보정에 크루가 동의했을 때 갱신
     @Column(nullable = false)
     var updatedAt: Instant = createdAt,
-) : BaseEntity()
+) : BaseEntity() {
+
+    // 값이 바뀌면 양측 확인을 다시 받아야 함
+    fun changeDetourKm(detourKm: BigDecimal) {
+        if (this.detourKm.compareTo(detourKm) == 0) return
+        this.detourKm = detourKm
+        this.driverConfirmedAt = null
+        this.passengerConfirmedAt = null
+        this.updatedAt = Instant.now()
+    }
+
+    fun confirmBy(crewMemberId: Long): Boolean {
+        val now = Instant.now()
+        when (crewMemberId) {
+            driver.id -> driverConfirmedAt = now
+            passenger.id -> passengerConfirmedAt = now
+            else -> return false
+        }
+        return true
+    }
+
+    // 운전자, 동승자 둘 다 확인해야 정산에 사용
+    val isConfirmed: Boolean
+        get() = driverConfirmedAt != null && passengerConfirmedAt != null
+}

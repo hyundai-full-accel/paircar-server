@@ -22,4 +22,15 @@ enum class ErrorCode(
     // 차량
     CAR_NOT_FOUND(HttpStatus.NOT_FOUND, "차량을 찾을 수 없습니다."),
     CAR_NOT_REGISTERED_TO_MEMBER(HttpStatus.FORBIDDEN, "멤버가 등록하지 않은 차량입니다."),
+
+    // 크루
+    CREW_NOT_FOUND(HttpStatus.NOT_FOUND, "크루를 찾을 수 없습니다."),
+    CREW_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "크루 멤버를 찾을 수 없습니다."),
+    CREW_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 크루에 참여한 멤버입니다."),
+    CREW_MISMATCH(HttpStatus.BAD_REQUEST, "같은 크루 소속이 아닙니다."),
+    CREW_PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "크루 장소를 찾을 수 없습니다."),
+    CREW_PLACE_NAME_DUPLICATED(HttpStatus.CONFLICT, "크루에 같은 이름의 장소가 이미 있습니다."),
+    DETOUR_NOT_FOUND(HttpStatus.NOT_FOUND, "우회 거리를 찾을 수 없습니다."),
+    DETOUR_SAME_PASSENGER_AND_DRIVER(HttpStatus.BAD_REQUEST, "동승자와 운전자가 같을 수 없습니다."),
+    DETOUR_CONFIRMER_NOT_PARTY(HttpStatus.FORBIDDEN, "우회 거리의 운전자나 동승자만 확인할 수 있습니다."),
 }

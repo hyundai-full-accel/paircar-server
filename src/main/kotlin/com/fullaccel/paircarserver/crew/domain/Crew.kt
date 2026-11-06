@@ -34,4 +34,9 @@ class Crew(
 
     @Column(nullable = false, updatable = false)
     val createdAt: Instant = Instant.now(),
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun changeManualFuelPrice(priceWon: Int?) {
+        this.manualFuelPriceWon = priceWon
+    }
+}

@@ -3,8 +3,11 @@ package com.fullaccel.paircarserver.trip.application
 import com.fullaccel.paircarserver.trip.application.dto.BoardingEventCommand
 import com.fullaccel.paircarserver.trip.application.dto.EndTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.SegmentCommand
+import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.TripResult
+import com.fullaccel.paircarserver.trip.domain.Boarding
+import java.time.LocalDate
 
 // 운행, 탑승, 구간. 쓰기 요청은 모두 그 운행의 운전자(driverMemberId)만 할 수 있음
 // 탑승, 하차, 구간, 종료는 같은 요청이 다시 와도 결과가 같음 (차량 앱 오프라인 버퍼 재전송 대비)
@@ -35,4 +38,10 @@ interface TripService {
     // 탑승했는데 하차 기록이 없는 동승자는 도착 시각, 도착 주행거리로 하차 처리함
     // 이미 끝난 운행이면 그대로 반환함
     fun endTrip(driverMemberId: Long, tripId: Long, command: EndTripCommand): TripResult
+
+    // 정산용 조회: 크루의 끝난 운행 중 운행일이 until 이전이고 구간이 올라온 운행. 탑승한 동승자만 포함
+    fun getSettlementTrips(crewId: Long, until: LocalDate): List<SettlementTrip>
+
+    // 다른 패키지 서비스가 연관관계를 맺을 때 쓰는 엔티티 조회. 트랜잭션 안에서만 사용
+    fun getBoardingEntity(boardingId: Long): Boarding
 }

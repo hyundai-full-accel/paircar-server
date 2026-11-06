@@ -12,6 +12,9 @@ import com.fullaccel.paircarserver.trip.application.dto.BoardingEventCommand
 import com.fullaccel.paircarserver.trip.application.dto.EndTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.SegmentCommand
 import com.fullaccel.paircarserver.trip.application.dto.SegmentResult
+import com.fullaccel.paircarserver.trip.application.dto.SettlementBoarding
+import com.fullaccel.paircarserver.trip.application.dto.SettlementSegment
+import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.TripResult
 import com.fullaccel.paircarserver.trip.domain.Boarding
@@ -197,6 +200,49 @@ class TripServiceImpl(
             .forEach { it.alight(command.endedAt, command.endOdometerKm) }
         return toResult(trip)
     }
+
+    override fun getSettlementTrips(crewId: Long, until: LocalDate): List<SettlementTrip> {
+        val trips = tripRepository.findAllByDriverCrewIdAndEndedAtIsNotNullAndServiceDateBeforeOrderByServiceDateAscIdAsc(crewId, until)
+        if (trips.isEmpty()) return emptyList()
+        val tripIds = trips.map { it.id }
+        val segmentsByTrip = tripSegmentRepository.findAllByTripIdIn(tripIds).groupBy { it.trip.id }
+        val ridersBySegment = tripSegmentRiderRepository.findAllByTripSegmentTripIdIn(tripIds)
+            .groupBy({ it.tripSegment.id }, { it.boarding.id })
+        val boardingsByTrip = boardingRepository.findAllByTripIdInAndBoardedAtIsNotNull(tripIds).groupBy { it.trip.id }
+
+        return trips
+            .filter { segmentsByTrip.containsKey(it.id) } // 구간이 아직 안 올라온 운행은 다음 정산으로 미룸
+            .map { trip ->
+                SettlementTrip(
+                    tripId = trip.id,
+                    driverCrewMemberId = trip.driver.id,
+                    fuelType = trip.car.fuelType,
+                    serviceDate = trip.serviceDate,
+                    originPlaceId = trip.originPlace.id,
+                    destinationPlaceId = trip.destinationPlace.id,
+                    tollFareWon = trip.tollFareWon,
+                    segments = segmentsByTrip.getValue(trip.id).sortedBy { it.seq }.map { segment ->
+                        SettlementSegment(
+                            distanceKm = segment.endOdometerKm - segment.startOdometerKm,
+                            fuelEconomy = segment.fuelEconomy,
+                            fuelEconomySource = segment.fuelEconomySource,
+                            riderBoardingIds = ridersBySegment[segment.id].orEmpty().toSet(),
+                        )
+                    },
+                    boardings = boardingsByTrip[trip.id].orEmpty().map { boarding ->
+                        SettlementBoarding(
+                            boardingId = boarding.id,
+                            crewMemberId = boarding.crewMember.id,
+                            boardPlaceId = boarding.boardPlace.id,
+                            alightPlaceId = boarding.alightPlace.id,
+                        )
+                    },
+                )
+            }
+    }
+
+    override fun getBoardingEntity(boardingId: Long): Boarding =
+        boardingRepository.findByIdOrNull(boardingId) ?: throw BusinessException(ErrorCode.BOARDING_NOT_FOUND)
 
     private fun getTripEntity(tripId: Long): Trip =
         tripRepository.findByIdOrNull(tripId) ?: throw BusinessException(ErrorCode.TRIP_NOT_FOUND)

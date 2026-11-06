@@ -48,4 +48,9 @@ enum class ErrorCode(
     BOARDING_ALREADY_BOARDED(HttpStatus.CONFLICT, "이미 탑승한 동승자입니다."),
     BOARDING_NOT_BOARDED(HttpStatus.CONFLICT, "아직 탑승하지 않은 동승자입니다."),
     INVALID_SEGMENT(HttpStatus.BAD_REQUEST, "구간 정보가 올바르지 않습니다."),
+
+    // 정산
+    RECEIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "영수증을 찾을 수 없습니다."),
+    FUEL_PRICE_NOT_FOUND(HttpStatus.CONFLICT, "정산 월의 유가 정보가 없습니다. 크루 유가를 직접 입력해 주세요."),
+    SETTLEMENT_MODE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "아직 지원하지 않는 정산 방식입니다."),
 }

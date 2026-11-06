@@ -7,4 +7,6 @@ interface TripSegmentRiderRepository : JpaRepository<TripSegmentRider, Long> {
 
     @EntityGraph(attributePaths = ["boarding"])
     fun findAllByTripSegmentTripId(tripId: Long): List<TripSegmentRider>
+
+    fun findAllByTripSegmentTripIdIn(tripIds: Collection<Long>): List<TripSegmentRider>
 }

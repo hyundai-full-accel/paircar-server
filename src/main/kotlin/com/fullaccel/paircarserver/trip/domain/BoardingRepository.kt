@@ -9,4 +9,6 @@ interface BoardingRepository : JpaRepository<Boarding, Long> {
     fun findAllByTripIdOrderById(tripId: Long): List<Boarding>
 
     fun findByTripIdAndCrewMemberId(tripId: Long, crewMemberId: Long): Boarding?
+
+    fun findAllByTripIdInAndBoardedAtIsNotNull(tripIds: Collection<Long>): List<Boarding>
 }

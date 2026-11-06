@@ -14,8 +14,10 @@ import java.time.YearMonth
 data class ReceiptResult(
     val receiptId: Long,
     val payerCrewMemberId: Long,
+    val payerMemberId: Long,
     val payerNickname: String,
     val payeeCrewMemberId: Long,
+    val payeeMemberId: Long,
     val payeeNickname: String,
     val month: YearMonth,
     val settlementMode: SettlementMode,
@@ -50,8 +52,10 @@ data class ReceiptResult(
             return ReceiptResult(
                 receiptId = receipt.id,
                 payerCrewMemberId = receipt.payer.id,
+                payerMemberId = receipt.payer.member.id,
                 payerNickname = receipt.payer.member.nickname,
                 payeeCrewMemberId = receipt.payee.id,
+                payeeMemberId = receipt.payee.member.id,
                 payeeNickname = receipt.payee.member.nickname,
                 month = YearMonth.from(receipt.month),
                 settlementMode = receipt.settlementMode,

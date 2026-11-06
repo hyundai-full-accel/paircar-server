@@ -57,13 +57,14 @@ class CrewMemberDetour(
     var updatedAt: Instant = createdAt,
 ) : BaseEntity() {
 
-    // 값이 바뀌면 양측 확인을 다시 받아야 함
-    fun changeDetourKm(detourKm: BigDecimal) {
-        if (this.detourKm.compareTo(detourKm) == 0) return
+    // 값이 바뀌면 양측 확인을 다시 받아야 함. 바뀌었으면 true
+    fun changeDetourKm(detourKm: BigDecimal): Boolean {
+        if (this.detourKm.compareTo(detourKm) == 0) return false
         this.detourKm = detourKm
         this.driverConfirmedAt = null
         this.passengerConfirmedAt = null
         this.updatedAt = Instant.now()
+        return true
     }
 
     fun confirmBy(crewMemberId: Long): Boolean {

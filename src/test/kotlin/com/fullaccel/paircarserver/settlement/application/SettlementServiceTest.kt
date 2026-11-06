@@ -13,6 +13,7 @@ import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
 import com.fullaccel.paircarserver.member.application.MemberService
 import com.fullaccel.paircarserver.member.application.dto.BankAccountCommand
+import com.fullaccel.paircarserver.settlement.application.event.ReceiptIssuedEvent
 import com.fullaccel.paircarserver.trip.application.TripService
 import com.fullaccel.paircarserver.trip.application.dto.BoardingEventCommand
 import com.fullaccel.paircarserver.trip.application.dto.EndTripCommand
@@ -24,6 +25,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.event.ApplicationEvents
+import org.springframework.test.context.event.RecordApplicationEvents
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
@@ -33,6 +36,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @IntegrationTest
+@RecordApplicationEvents
 class SettlementServiceTest(
     @Autowired private val settlementService: SettlementService,
     @Autowired private val tripService: TripService,
@@ -42,6 +46,9 @@ class SettlementServiceTest(
     @Autowired private val crewPlaceService: CrewPlaceService,
     @Autowired private val crewDetourService: CrewDetourService,
 ) {
+
+    @Autowired
+    private lateinit var events: ApplicationEvents
 
     private val november = YearMonth.of(2026, 11)
 
@@ -195,5 +202,19 @@ class SettlementServiceTest(
 
         assertEquals(20_700, found.amountWon)
         assertEquals(18, found.boardingDays)
+    }
+
+    @Test
+    fun `영수증을 발행하면 내는 사람에게 갈 ReceiptIssuedEvent를 발행한다`() {
+        confirmDetour("3.0")
+        commuteDays(november, 18)
+
+        val receipt = settlementService.issueReceipts(crewId, november).single()
+
+        val event = events.stream(ReceiptIssuedEvent::class.java).toList().single()
+        assertEquals(receipt.receiptId, event.receiptId)
+        assertEquals(receipt.payerMemberId, event.payerMemberId)
+        assertEquals(20_700, event.amountWon)
+        assertEquals(november, event.month)
     }
 }

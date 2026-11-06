@@ -9,7 +9,7 @@ import java.time.Instant
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class LiveEvent(
     val type: LiveEventType,
-    val tripId: Long,
+    val tripId: Long? = null, // 운행과 무관한 이벤트(우회 거리 확인, 영수증)는 생략
     val data: LiveEventData? = null, // 내용이 없는 이벤트(trip.ended)는 생략
     val occurredAt: Instant = Instant.now(),
 )
@@ -29,6 +29,12 @@ enum class LiveEventType(@get:JsonValue val value: String) {
     RIDER_HERE("rider.here"),
     RIDER_ABSENT("rider.absent"),
     RIDER_PLACE_CHANGED("rider.place-changed"),
+
+    // 운전자, 동승자 모두
+    DETOUR_CONFIRM_REQUESTED("detour.confirm-requested"),
+
+    // 동승자(내는 사람)가 받음
+    RECEIPT_ISSUED("receipt.issued"),
 }
 
 // 이벤트 종류별 내용
@@ -68,4 +74,20 @@ data class RiderPlaceData(
     val placeName: String,
     val latitude: BigDecimal,
     val longitude: BigDecimal,
+) : LiveEventData
+
+data class DetourData(
+    val detourId: Long,
+    val crewId: Long,
+    val placeName: String,
+    val detourKm: BigDecimal,
+    val driverNickname: String,
+    val passengerNickname: String,
+) : LiveEventData
+
+data class ReceiptData(
+    val receiptId: Long,
+    val month: String, // 2026-11
+    val amountWon: Int,
+    val payeeNickname: String,
 ) : LiveEventData

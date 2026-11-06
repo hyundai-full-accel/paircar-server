@@ -17,17 +17,17 @@ import org.springframework.transaction.event.TransactionalEventListener
 // 커밋된 변경만 알리도록 트랜잭션 커밋 뒤에 실행됨 (롤백되면 알리지 않음)
 @Component
 class TripLiveEventListener(
-    private val liveEventSender: LiveEventSender,
+    private val liveNotifier: LiveNotifier,
 ) {
 
     @TransactionalEventListener
     fun on(event: TripStartedEvent) {
-        liveEventSender.send(event.riderMemberIds, LiveEvent(LiveEventType.TRIP_STARTED, event.tripId, DriverData(event.driverNickname)))
+        liveNotifier.notify(event.riderMemberIds, LiveEvent(LiveEventType.TRIP_STARTED, event.tripId, DriverData(event.driverNickname)))
     }
 
     @TransactionalEventListener
     fun on(event: RiderBoardedEvent) {
-        liveEventSender.send(
+        liveNotifier.notify(
             listOf(event.riderMemberId),
             LiveEvent(LiveEventType.RIDER_BOARDED, event.tripId, RiderData(event.riderCrewMemberId, event.riderNickname)),
         )
@@ -35,14 +35,14 @@ class TripLiveEventListener(
 
     @TransactionalEventListener
     fun on(event: TripEndedEvent) {
-        liveEventSender.send(event.riderMemberIds, LiveEvent(LiveEventType.TRIP_ENDED, event.tripId))
+        liveNotifier.notify(event.riderMemberIds, LiveEvent(LiveEventType.TRIP_ENDED, event.tripId))
     }
 
     // 운전자가 직접 바꾼 경우는 차량 앱이 이미 알고 있으므로 알리지 않음
     @TransactionalEventListener
     fun on(event: BoardingCanceledEvent) {
         if (!event.byRider) return
-        liveEventSender.send(
+        liveNotifier.notify(
             listOf(event.driverMemberId),
             LiveEvent(LiveEventType.RIDER_ABSENT, event.tripId, RiderData(event.riderCrewMemberId, event.riderNickname)),
         )
@@ -59,6 +59,6 @@ class TripLiveEventListener(
             latitude = event.latitude,
             longitude = event.longitude,
         )
-        liveEventSender.send(listOf(event.driverMemberId), LiveEvent(LiveEventType.RIDER_PLACE_CHANGED, event.tripId, data))
+        liveNotifier.notify(listOf(event.driverMemberId), LiveEvent(LiveEventType.RIDER_PLACE_CHANGED, event.tripId, data))
     }
 }

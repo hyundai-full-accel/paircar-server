@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 @Service
 class LiveReportServiceImpl(
     private val tripService: TripService,
-    private val liveEventSender: LiveEventSender,
+    private val liveNotifier: LiveNotifier,
 ) : LiveReportService {
 
     override fun reportVehicleLocation(driverMemberId: Long, tripId: Long, command: VehicleLocationCommand) {
@@ -28,7 +28,7 @@ class LiveReportServiceImpl(
             .forEach { rider ->
                 val remain = remains[rider.crewMemberId]
                 val data = VehicleLocationData(command.latitude, command.longitude, remain?.remainSeconds, remain?.remainMeters)
-                liveEventSender.send(listOf(rider.memberId), LiveEvent(LiveEventType.VEHICLE_LOCATION, tripId, data))
+                liveNotifier.notify(listOf(rider.memberId), LiveEvent(LiveEventType.VEHICLE_LOCATION, tripId, data))
             }
     }
 
@@ -40,7 +40,7 @@ class LiveReportServiceImpl(
 
     override fun notifyDriverDelay(driverMemberId: Long, tripId: Long, minutes: Int) {
         val trip = getOngoingTripOfDriver(driverMemberId, tripId)
-        liveEventSender.send(
+        liveNotifier.notify(
             trip.boardings.filter { it.boardedAt == null }.map { it.memberId },
             LiveEvent(LiveEventType.DRIVER_DELAYED, tripId, DriverDelayData(trip.driverNickname, minutes)),
         )
@@ -48,7 +48,7 @@ class LiveReportServiceImpl(
 
     override fun notifyRiderDelay(riderMemberId: Long, tripId: Long, minutes: Int) {
         val (trip, rider) = getOngoingTripOfRider(riderMemberId, tripId)
-        liveEventSender.send(
+        liveNotifier.notify(
             listOf(trip.driverMemberId),
             LiveEvent(LiveEventType.RIDER_DELAYED, tripId, RiderDelayData(rider.crewMemberId, rider.nickname, minutes)),
         )
@@ -56,7 +56,7 @@ class LiveReportServiceImpl(
 
     override fun notifyRiderHere(riderMemberId: Long, tripId: Long) {
         val (trip, rider) = getOngoingTripOfRider(riderMemberId, tripId)
-        liveEventSender.send(
+        liveNotifier.notify(
             listOf(trip.driverMemberId),
             LiveEvent(LiveEventType.RIDER_HERE, tripId, RiderData(rider.crewMemberId, rider.nickname)),
         )
@@ -66,7 +66,7 @@ class LiveReportServiceImpl(
         val trip = getOngoingTripOfDriver(driverMemberId, tripId)
         val rider = trip.boardings.firstOrNull { it.crewMemberId == riderCrewMemberId }
             ?: throw BusinessException(ErrorCode.BOARDING_NOT_FOUND)
-        liveEventSender.send(listOf(rider.memberId), LiveEvent(type, tripId, RiderData(rider.crewMemberId, rider.nickname)))
+        liveNotifier.notify(listOf(rider.memberId), LiveEvent(type, tripId, RiderData(rider.crewMemberId, rider.nickname)))
     }
 
     private fun getOngoingTripOfDriver(driverMemberId: Long, tripId: Long): TripResult {

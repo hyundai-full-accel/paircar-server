@@ -2,10 +2,12 @@ package com.fullaccel.paircarserver.crew.application
 
 import com.fullaccel.paircarserver.crew.application.dto.DetourResult
 import com.fullaccel.paircarserver.crew.application.dto.RegisterDetourCommand
+import com.fullaccel.paircarserver.crew.application.event.DetourConfirmationRequestedEvent
 import com.fullaccel.paircarserver.crew.domain.CrewMemberDetour
 import com.fullaccel.paircarserver.crew.domain.CrewMemberDetourRepository
 import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,6 +18,7 @@ class CrewDetourServiceImpl(
     private val crewMemberDetourRepository: CrewMemberDetourRepository,
     private val crewService: CrewService,
     private val crewPlaceService: CrewPlaceService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : CrewDetourService {
 
     @Transactional
@@ -33,16 +36,34 @@ class CrewDetourServiceImpl(
 
         val existing = crewMemberDetourRepository.findByPassengerIdAndDriverIdAndPlaceId(passenger.id, driver.id, place.id)
         if (existing != null) {
-            existing.changeDetourKm(command.detourKm)
+            if (existing.changeDetourKm(command.detourKm)) publishConfirmationRequested(existing)
             return DetourResult.from(existing)
         }
-        val detour = CrewMemberDetour(
-            passenger = passenger,
-            driver = driver,
-            place = place,
-            detourKm = command.detourKm,
+        val detour = crewMemberDetourRepository.save(
+            CrewMemberDetour(
+                passenger = passenger,
+                driver = driver,
+                place = place,
+                detourKm = command.detourKm,
+            ),
         )
-        return DetourResult.from(crewMemberDetourRepository.save(detour))
+        publishConfirmationRequested(detour)
+        return DetourResult.from(detour)
+    }
+
+    private fun publishConfirmationRequested(detour: CrewMemberDetour) {
+        eventPublisher.publishEvent(
+            DetourConfirmationRequestedEvent(
+                detourId = detour.id,
+                crewId = detour.passenger.crew.id,
+                passengerMemberId = detour.passenger.member.id,
+                passengerNickname = detour.passenger.member.nickname,
+                driverMemberId = detour.driver.member.id,
+                driverNickname = detour.driver.member.nickname,
+                placeName = detour.place.name,
+                detourKm = detour.detourKm,
+            ),
+        )
     }
 
     @Transactional

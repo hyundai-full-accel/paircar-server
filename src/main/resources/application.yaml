@@ -18,3 +18,9 @@ paircar:
   invite:
     # 동승자 웹의 초대 참여 경로. 초대 링크 = base-url + "/" + code
     base-url: ${PAIRCAR_INVITE_BASE_URL:http://localhost:3000/join}
+  push:
+    # Web Push VAPID 키 (base64url). 둘 중 하나라도 비어 있으면 Push를 보내지 않음 (SSE는 그대로 동작)
+    # 키 만들기: npx web-push generate-vapid-keys
+    public-key: ${PAIRCAR_VAPID_PUBLIC_KEY:}
+    private-key: ${PAIRCAR_VAPID_PRIVATE_KEY:}
+    subject: ${PAIRCAR_VAPID_SUBJECT:mailto:admin@paircar.app}

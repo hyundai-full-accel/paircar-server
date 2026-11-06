@@ -7,6 +7,7 @@ import com.fullaccel.paircarserver.crew.application.dto.RegisterDetourCommand
 interface CrewDetourService {
 
     // 같은 동승자, 운전자, 장소가 이미 있으면 값을 바꾸고 양측 확인을 초기화함
+    // 새로 등록되거나 값이 바뀌면 DetourConfirmationRequestedEvent를 발행함
     // 동승자, 운전자, 장소가 같은 크루가 아니면 CREW_MISMATCH, 동승자와 운전자가 같으면 DETOUR_SAME_PASSENGER_AND_DRIVER
     fun registerDetour(crewId: Long, command: RegisterDetourCommand): DetourResult
 

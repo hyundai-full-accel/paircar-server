@@ -3,6 +3,7 @@ package com.fullaccel.paircarserver.crew.application
 import com.fullaccel.paircarserver.IntegrationTest
 import com.fullaccel.paircarserver.crew.application.dto.RegisterDetourCommand
 import com.fullaccel.paircarserver.crew.application.dto.RegisterPlaceCommand
+import com.fullaccel.paircarserver.crew.application.event.DetourConfirmationRequestedEvent
 import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
 import com.fullaccel.paircarserver.member.application.MemberService
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.event.ApplicationEvents
+import org.springframework.test.context.event.RecordApplicationEvents
 import java.math.BigDecimal
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -17,12 +20,16 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @IntegrationTest
+@RecordApplicationEvents
 class CrewDetourServiceTest(
     @Autowired private val crewDetourService: CrewDetourService,
     @Autowired private val crewPlaceService: CrewPlaceService,
     @Autowired private val crewService: CrewService,
     @Autowired private val memberService: MemberService,
 ) {
+
+    @Autowired
+    private lateinit var events: ApplicationEvents
 
     private var crewId = 0L
     private var driverId = 0L
@@ -124,5 +131,16 @@ class CrewDetourServiceTest(
         assertEquals(1, crewDetourService.getDetours(crewId).size)
         assertTrue(crewDetourService.findDetour(passengerId, driverId, placeId) != null)
         assertNull(crewDetourService.findDetour(driverId, passengerId, placeId))
+    }
+
+    @Test
+    fun `새로 등록하거나 값이 바뀔 때만 확인 요청 이벤트를 발행한다`() {
+        crewDetourService.registerDetour(crewId, command("3.0"))
+        crewDetourService.registerDetour(crewId, command("3.00")) // 같은 값
+        crewDetourService.registerDetour(crewId, command("3.4"))
+
+        val published = events.stream(DetourConfirmationRequestedEvent::class.java).toList()
+        assertEquals(listOf("3.0", "3.4"), published.map { it.detourKm.toPlainString() })
+        assertEquals("○○아파트 정문", published.first().placeName)
     }
 }

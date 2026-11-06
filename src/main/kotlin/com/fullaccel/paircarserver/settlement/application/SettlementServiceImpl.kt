@@ -9,6 +9,7 @@ import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
 import com.fullaccel.paircarserver.member.application.MemberService
 import com.fullaccel.paircarserver.settlement.application.dto.ReceiptResult
+import com.fullaccel.paircarserver.settlement.application.event.ReceiptIssuedEvent
 import com.fullaccel.paircarserver.settlement.calculator.EqualRideInput
 import com.fullaccel.paircarserver.settlement.calculator.FairRideInput
 import com.fullaccel.paircarserver.settlement.calculator.RideCost
@@ -23,6 +24,7 @@ import com.fullaccel.paircarserver.trip.application.TripService
 import com.fullaccel.paircarserver.trip.application.dto.SettlementBoarding
 import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.domain.FuelEconomySource
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,6 +43,7 @@ class SettlementServiceImpl(
     private val crewService: CrewService,
     private val crewDetourService: CrewDetourService,
     private val memberService: MemberService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : SettlementService {
 
     @Transactional
@@ -183,6 +186,15 @@ class SettlementServiceImpl(
                     tollWon = ride.cost.tollWon,
                 )
             },
+        )
+        eventPublisher.publishEvent(
+            ReceiptIssuedEvent(
+                receiptId = receipt.id,
+                month = YearMonth.from(month),
+                payerMemberId = payer.member.id,
+                payeeNickname = payee.member.nickname,
+                amountWon = receipt.amountWon,
+            ),
         )
         return ReceiptResult.of(receipt, items)
     }

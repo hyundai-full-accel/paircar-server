@@ -292,3 +292,21 @@ Table receipt_items {
     receipt_id  // 영수증 내역 조회
   }
 }
+
+// ---------- 실시간 알림 (live 모듈) ----------
+
+// 브라우저 Web Push 구독 (기기, 브라우저마다 1행)
+// 알림 채널 데이터라 엔티티 연관관계 없이 member_id 값만 가짐 (live 모듈이 member 모듈에 묶이지 않도록)
+Table push_subscriptions {
+  id bigint [pk, increment]                   // 구독 식별자
+  member_id bigint [not null, ref: > members.id] // 구독한 멤버
+  endpoint varchar(1024) [not null, unique]   // 브라우저 푸시 서비스 주소
+  p256dh varchar(255) [not null]              // 메시지 암호화용 브라우저 공개키 (base64url)
+  auth varchar(255) [not null]                // 메시지 암호화용 인증 비밀값 (base64url)
+  created_at timestamptz [not null]           // 등록 시각
+  updated_at timestamptz [not null]           // 갱신 시각 (다른 멤버로 바뀌거나 키가 바뀜)
+
+  indexes {
+    member_id  // 멤버의 구독 조회 (알림 발송)
+  }
+}

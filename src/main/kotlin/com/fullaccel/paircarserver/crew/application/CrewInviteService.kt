@@ -7,7 +7,8 @@ import com.fullaccel.paircarserver.crew.application.dto.InviteResult
 // 초대 링크. 동승자는 앱 설치나 로그인 없이 링크로 참여함
 interface CrewInviteService {
 
-    // 크루 멤버만 발급 가능. 7일 뒤 만료
+    // 크루 멤버만 발급 가능. 7일 뒤 만료. 코드는 헷갈리는 글자를 뺀 대문자, 숫자 8자
+    // 코드를 받는 메서드는 대소문자, 하이픈, 공백을 무시함
     fun createInvite(crewId: Long, requesterMemberId: Long): InviteResult
 
     // 참여 화면용 조회. 없으면 INVITE_NOT_FOUND, 만료됐으면 INVITE_EXPIRED

@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.security.SecureRandom
 import java.time.Duration
 import java.time.Instant
-import java.util.Base64
 
 @Service
 @Transactional(readOnly = true)
@@ -23,6 +22,7 @@ class CrewInviteServiceImpl(
     private val crewService: CrewService,
     private val memberService: MemberService,
     private val memberTokenService: MemberTokenService,
+    private val inviteProperties: InviteProperties,
 ) : CrewInviteService {
 
     private val random = SecureRandom()
@@ -32,13 +32,13 @@ class CrewInviteServiceImpl(
         crewService.validateCrewAccess(crewId, requesterMemberId)
         val invite = CrewInvite(
             crew = crewService.getCrewEntity(crewId),
-            code = Base64.getUrlEncoder().withoutPadding().encodeToString(ByteArray(CODE_BYTES).also(random::nextBytes)),
+            code = generateUniqueCode(),
             expiresAt = Instant.now().plus(INVITE_LIFETIME),
         )
-        return InviteResult.from(crewInviteRepository.save(invite))
+        return toResult(crewInviteRepository.save(invite))
     }
 
-    override fun getInvite(code: String): InviteResult = InviteResult.from(getValidInvite(code))
+    override fun getInvite(code: String): InviteResult = toResult(getValidInvite(code))
 
     @Transactional
     override fun joinAsNewMember(code: String, nickname: String): InviteJoinResult {
@@ -59,14 +59,29 @@ class CrewInviteServiceImpl(
         return crewService.addMember(invite.crew.id, memberId)
     }
 
+    // 사람이 입력한 코드도 받도록 대소문자, 하이픈, 공백을 무시함 (k7m2-qx9p → K7M2QX9P)
     private fun getValidInvite(code: String): CrewInvite {
-        val invite = crewInviteRepository.findByCode(code) ?: throw BusinessException(ErrorCode.INVITE_NOT_FOUND)
+        val normalized = code.uppercase().filter { it != '-' && !it.isWhitespace() }
+        val invite = crewInviteRepository.findByCode(normalized) ?: throw BusinessException(ErrorCode.INVITE_NOT_FOUND)
         if (invite.expiresAt.isBefore(Instant.now())) throw BusinessException(ErrorCode.INVITE_EXPIRED)
         return invite
     }
 
+    private fun generateUniqueCode(): String {
+        repeat(MAX_CODE_ATTEMPTS) {
+            val code = (1..CODE_LENGTH).map { CODE_ALPHABET[random.nextInt(CODE_ALPHABET.length)] }.joinToString("")
+            if (!crewInviteRepository.existsByCode(code)) return code
+        }
+        throw IllegalStateException("초대 코드를 만들지 못했습니다.")
+    }
+
+    private fun toResult(invite: CrewInvite) = InviteResult.of(invite, inviteProperties.inviteUrl(invite.code))
+
     companion object {
-        private const val CODE_BYTES = 9 // Base64 URL 12자
+        // 헷갈리는 0, 1, I, L, O를 뺀 31자. 8자면 약 8,500억 가지
+        private const val CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+        private const val CODE_LENGTH = 8
+        private const val MAX_CODE_ATTEMPTS = 5
         private val INVITE_LIFETIME: Duration = Duration.ofDays(7)
     }
 }

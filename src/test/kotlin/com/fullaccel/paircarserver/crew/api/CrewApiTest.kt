@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import java.time.Instant
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @IntegrationTest
 @AutoConfigureMockMvc
@@ -115,6 +117,26 @@ class CrewApiTest(
     }
 
     @Test
+    fun `초대 코드는 헷갈리는 글자 없는 8자이고 링크는 설정한 주소로 만든다`() {
+        val data = mockMvc.post("/api/crews/$crewId/invites") { bearer(jihoon) }.data(objectMapper)
+        val code = data["code"].asText()
+
+        assertTrue(Regex("[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{8}").matches(code), code)
+        assertEquals("https://paircar.test/join/$code", data["inviteUrl"].asText())
+    }
+
+    @Test
+    fun `사람이 입력한 코드는 대소문자와 하이픈을 무시한다`() {
+        val code = invite()
+        val typed = code.lowercase().chunked(4).joinToString("-") // K7M2QX9P → k7m2-qx9p
+
+        mockMvc.get("/api/invites/$typed").andExpect {
+            status { isOk() }
+            jsonPath("$.data.code") { value(code) }
+        }
+    }
+
+    @Test
     fun `토큰이 있는 멤버는 초대 코드로 바로 참여하고 두 번 참여하면 409`() {
         val minjun = mockMvc.createMemberToken(objectMapper, "민준")
         val code = invite()
@@ -133,10 +155,10 @@ class CrewApiTest(
             jsonPath("$.error.code") { value("INVITE_NOT_FOUND") }
         }
 
-        val expired = crewInviteRepository.save(
-            CrewInvite(crew = crewRepository.findByIdOrNull(crewId)!!, code = "expired-code", expiresAt = Instant.now().minusSeconds(1)),
+        crewInviteRepository.save(
+            CrewInvite(crew = crewRepository.findByIdOrNull(crewId)!!, code = "EXPRD234", expiresAt = Instant.now().minusSeconds(1)),
         )
-        mockMvc.post("/api/invites/${expired.code}/members") { json("""{"nickname": "수아"}""") }.andExpect {
+        mockMvc.post("/api/invites/EXPRD234/members") { json("""{"nickname": "수아"}""") }.andExpect {
             status { isGone() }
             jsonPath("$.error.code") { value("INVITE_EXPIRED") }
         }

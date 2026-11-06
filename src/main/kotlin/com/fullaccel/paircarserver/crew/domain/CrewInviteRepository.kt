@@ -7,4 +7,6 @@ interface CrewInviteRepository : JpaRepository<CrewInvite, Long> {
 
     @EntityGraph(attributePaths = ["crew"])
     fun findByCode(code: String): CrewInvite?
+
+    fun existsByCode(code: String): Boolean
 }

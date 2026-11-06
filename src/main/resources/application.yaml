@@ -18,6 +18,10 @@ spring:
         jdbc:
           time_zone: UTC
 
+server:
+  # nginx 게이트웨이가 보낸 X-Forwarded-* 헤더로 원래 주소, 프로토콜을 복원 (Swagger 서버 주소, 리다이렉트)
+  forward-headers-strategy: framework
+
 management:
   endpoints:
     web:

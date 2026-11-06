@@ -20,14 +20,16 @@ flowchart LR
         Web["동승자 웹<br/>모바일웹 · PWA"]
     end
 
+    Gateway["nginx 게이트웨이<br/>라우팅 · SSE · 요청 제한"]
     Server["크루 서버<br/>Spring Boot 모놀리스"]
     DB[("PostgreSQL")]
     Push["브라우저 푸시 서비스<br/>(브라우저 제조사가 운영)"]
 
-    CarApp -- "REST: 운행 · 탑승 · 구간 · 위치" --> Server
-    Server -- "SSE: 동승자 알림" --> CarApp
-    Web -- "REST: 참여 · 지각 · 불참 · 영수증" --> Server
-    Server -- "SSE: 실시간 위치 · 상태" --> Web
+    CarApp -- "REST: 운행 · 탑승 · 구간 · 위치" --> Gateway
+    Gateway -- "SSE: 동승자 알림" --> CarApp
+    Web -- "REST: 참여 · 지각 · 불참 · 영수증" --> Gateway
+    Gateway -- "SSE: 실시간 위치 · 상태" --> Web
+    Gateway <--> Server
     Server -- "Web Push (VAPID)" --> Push
     Push -- "폰 알림" --> Web
     Server --> DB
@@ -36,6 +38,7 @@ flowchart LR
 | 구성 | 맡는 일 |
 |---|---|
 | 차량 앱 | 탑승 판단(위치 → 도어 → 벨트 상태 머신), 경유지 설정·삭제, 거리·연비 측정, TTS, 오프라인 버퍼 |
+| nginx 게이트웨이 | 외부에 열린 유일한 입구. 경로별 라우팅, SSE 스트리밍, 요청 제한, 게이트웨이 오류를 서버와 같은 응답 형식으로 |
 | 크루 서버 | 크루·장소·운행 저장, 정산 계산, 실시간 이벤트 분배, 인증 |
 | 동승자 웹 | 초대 링크로 참여, 남은 시간 지도, 지각·불참 버튼, 영수증 확인 |
 
@@ -188,4 +191,5 @@ flowchart LR
 | 실시간 | SSE (Spring MVC `SseEmitter`), Web Push (`nl.martijndwars:web-push`, VAPID) |
 | 테스트 | JUnit 5, Testcontainers (PostgreSQL), MockMvc |
 | 로컬 개발 | `./gradlew bootRun` 시 `infra/compose.local.yaml`의 PostgreSQL 자동 실행 |
-| 배포 | `infra/Dockerfile` (멀티 스테이지, 레이어 분리 JRE 이미지), `infra/compose.yaml` (서버 + PostgreSQL) |
+| 배포 | `infra/Dockerfile` (멀티 스테이지, 레이어 분리 JRE 이미지), `infra/compose.yaml` (nginx + 서버 + PostgreSQL) |
+| 게이트웨이 | nginx 1.27 (`infra/nginx/paircar.conf`) |

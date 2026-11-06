@@ -8,7 +8,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: none # Flyway 도입 후 validate로 변경
+      ddl-auto: validate # 스키마는 Flyway(db/migration)만 바꿈. 엔티티와 어긋나면 기동 실패
     properties:
       hibernate:
         jdbc:

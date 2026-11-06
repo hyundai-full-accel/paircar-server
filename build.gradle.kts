@@ -24,6 +24,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17")
     // Web Push (VAPID). 쓰지 않는 비동기 HTTP 클라이언트와 CLI 의존성은 빼고, BouncyCastle은 최신 jdk18on으로 교체
     implementation("nl.martijndwars:web-push:5.1.2") {

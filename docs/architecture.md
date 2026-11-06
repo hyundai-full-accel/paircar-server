@@ -187,4 +187,5 @@ flowchart LR
 | API 문서 | springdoc-openapi (Swagger UI) |
 | 실시간 | SSE (Spring MVC `SseEmitter`), Web Push (`nl.martijndwars:web-push`, VAPID) |
 | 테스트 | JUnit 5, Testcontainers (PostgreSQL), MockMvc |
-| 로컬 개발 | Docker Compose (`bootRun` 시 PostgreSQL 자동 실행) |
+| 로컬 개발 | `./gradlew bootRun` 시 `infra/compose.local.yaml`의 PostgreSQL 자동 실행 |
+| 배포 | `infra/Dockerfile` (멀티 스테이지, 레이어 분리 JRE 이미지), `infra/compose.yaml` (서버 + PostgreSQL) |

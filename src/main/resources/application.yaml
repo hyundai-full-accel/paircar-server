@@ -1,6 +1,10 @@
 spring:
   application:
     name: paircar-server
+  docker:
+    compose:
+      # bootRun 때 로컬 PostgreSQL을 자동으로 띄움 (spring-boot-docker-compose, 개발 전용)
+      file: infra/compose.local.yaml
   jackson:
     deserialization:
       # JSON에 숫자 필드가 빠지면 0으로 채우지 않고 실패시킴 (Odometer 0 같은 값이 조용히 저장되는 것 방지)
@@ -13,6 +17,16 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health # 컨테이너 헬스체크용. 다른 엔드포인트는 열지 않음
+  endpoint:
+    health:
+      probes:
+        enabled: true # /actuator/health/liveness, /actuator/health/readiness
 
 paircar:
   invite:

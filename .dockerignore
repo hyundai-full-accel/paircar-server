@@ -1,0 +1,8 @@
+# Docker 빌드 컨텍스트에서 제외 (infra/Dockerfile은 소스와 Gradle 설정만 씀)
+*
+!gradlew
+!gradle/
+!settings.gradle.kts
+!build.gradle.kts
+!src/
+src/test/

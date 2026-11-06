@@ -1,0 +1,18 @@
+# 로컬 개발용 PostgreSQL만 실행
+# ./gradlew bootRun 하면 spring-boot-docker-compose가 자동으로 띄우고 접속 정보도 자동으로 연결함
+name: paircar-local
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: paircar
+      POSTGRES_USER: paircar
+      POSTGRES_PASSWORD: paircar
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # docker compose down 해도 데이터 유지 (지우려면 down -v)
+
+volumes:
+  postgres-data:

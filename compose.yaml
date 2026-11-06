@@ -1,9 +1,0 @@
-services:
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: paircar
-      POSTGRES_USER: paircar
-      POSTGRES_PASSWORD: paircar
-    ports:
-      - "5432:5432"

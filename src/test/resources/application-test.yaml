@@ -1,0 +1,4 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # 엔티티 매핑 검증용. Flyway 도입 후 validate로 변경

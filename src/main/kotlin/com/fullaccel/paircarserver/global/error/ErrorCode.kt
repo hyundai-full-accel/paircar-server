@@ -33,4 +33,19 @@ enum class ErrorCode(
     DETOUR_NOT_FOUND(HttpStatus.NOT_FOUND, "우회 거리를 찾을 수 없습니다."),
     DETOUR_SAME_PASSENGER_AND_DRIVER(HttpStatus.BAD_REQUEST, "동승자와 운전자가 같을 수 없습니다."),
     DETOUR_CONFIRMER_NOT_PARTY(HttpStatus.FORBIDDEN, "우회 거리의 운전자나 동승자만 확인할 수 있습니다."),
+
+    // 운행
+    TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "운행을 찾을 수 없습니다."),
+    TRIP_ACCESS_DENIED(HttpStatus.FORBIDDEN, "이 운행의 운전자만 요청할 수 있습니다."),
+    TRIP_ALREADY_IN_PROGRESS(HttpStatus.CONFLICT, "이미 진행 중인 운행이 있습니다."),
+    TRIP_ALREADY_ENDED(HttpStatus.CONFLICT, "이미 끝난 운행입니다."),
+    BANK_ACCOUNT_REQUIRED(HttpStatus.BAD_REQUEST, "운행을 시작하려면 운전자 계좌를 먼저 등록해야 합니다."),
+    TOO_MANY_WAYPOINTS(HttpStatus.BAD_REQUEST, "경유지는 최대 2곳입니다."),
+    INVALID_ODOMETER(HttpStatus.BAD_REQUEST, "누적 주행거리가 이전 값보다 작습니다."),
+    BOARDING_NOT_FOUND(HttpStatus.NOT_FOUND, "탑승 정보를 찾을 수 없습니다."),
+    BOARDING_DRIVER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "운전자는 동승자로 탑승할 수 없습니다."),
+    BOARDING_DUPLICATED(HttpStatus.BAD_REQUEST, "같은 동승자가 중복되었습니다."),
+    BOARDING_ALREADY_BOARDED(HttpStatus.CONFLICT, "이미 탑승한 동승자입니다."),
+    BOARDING_NOT_BOARDED(HttpStatus.CONFLICT, "아직 탑승하지 않은 동승자입니다."),
+    INVALID_SEGMENT(HttpStatus.BAD_REQUEST, "구간 정보가 올바르지 않습니다."),
 }

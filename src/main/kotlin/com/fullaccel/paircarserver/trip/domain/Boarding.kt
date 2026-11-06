@@ -56,4 +56,25 @@ class Boarding(
     // 하차 시점 누적 주행거리 (구간 경계). 감지 실패 시 trip.endOdometerKm로 채움
     @Column(precision = 9, scale = 1)
     var alightOdometerKm: BigDecimal? = null,
-) : BaseEntity()
+) : BaseEntity() {
+
+    val isBoarded: Boolean
+        get() = boardedAt != null
+
+    val isAlighted: Boolean
+        get() = alightedAt != null
+
+    fun board(boardedAt: Instant, odometerKm: BigDecimal) {
+        this.boardedAt = boardedAt
+        this.boardOdometerKm = odometerKm
+    }
+
+    fun alight(alightedAt: Instant, odometerKm: BigDecimal) {
+        this.alightedAt = alightedAt
+        this.alightOdometerKm = odometerKm
+    }
+
+    fun changeBoardPlace(place: CrewPlace) {
+        this.boardPlace = place
+    }
+}

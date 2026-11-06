@@ -65,4 +65,15 @@ class Trip(
     // 운행 전체 실제 주행 경로 (Encoded Polyline). 차량 앱이 FusedLocation으로 모아 도착 후 업로드
     @Column(columnDefinition = "text")
     var routePolyline: String? = null,
-) : BaseEntity()
+) : BaseEntity() {
+
+    val isEnded: Boolean
+        get() = endedAt != null
+
+    fun end(endedAt: Instant, endOdometerKm: BigDecimal, tollFareWon: Int, routePolyline: String?) {
+        this.endedAt = endedAt
+        this.endOdometerKm = endOdometerKm
+        this.tollFareWon = tollFareWon
+        this.routePolyline = routePolyline
+    }
+}

@@ -31,4 +31,12 @@ class MemberBankAccount(
 
     @Column(nullable = false)
     var updatedAt: Instant = createdAt,
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun update(bankName: String, accountNumber: String, accountHolder: String) {
+        this.bankName = bankName
+        this.accountNumber = accountNumber
+        this.accountHolder = accountHolder
+        this.updatedAt = Instant.now()
+    }
+}

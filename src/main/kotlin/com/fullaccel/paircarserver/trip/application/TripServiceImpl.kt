@@ -17,6 +17,11 @@ import com.fullaccel.paircarserver.trip.application.dto.SettlementSegment
 import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.TripResult
+import com.fullaccel.paircarserver.trip.application.event.BoardPlaceChangedEvent
+import com.fullaccel.paircarserver.trip.application.event.BoardingCanceledEvent
+import com.fullaccel.paircarserver.trip.application.event.RiderBoardedEvent
+import com.fullaccel.paircarserver.trip.application.event.TripEndedEvent
+import com.fullaccel.paircarserver.trip.application.event.TripStartedEvent
 import com.fullaccel.paircarserver.trip.domain.Boarding
 import com.fullaccel.paircarserver.trip.domain.BoardingRepository
 import com.fullaccel.paircarserver.trip.domain.Trip
@@ -25,6 +30,7 @@ import com.fullaccel.paircarserver.trip.domain.TripSegment
 import com.fullaccel.paircarserver.trip.domain.TripSegmentRepository
 import com.fullaccel.paircarserver.trip.domain.TripSegmentRider
 import com.fullaccel.paircarserver.trip.domain.TripSegmentRiderRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -42,6 +48,7 @@ class TripServiceImpl(
     private val carService: CarService,
     private val crewService: CrewService,
     private val crewPlaceService: CrewPlaceService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : TripService {
 
     @Transactional
@@ -90,6 +97,14 @@ class TripServiceImpl(
                 Boarding(trip = trip, crewMember = crewMember, boardPlace = boardPlace, alightPlace = alightPlace)
             },
         )
+        eventPublisher.publishEvent(
+            TripStartedEvent(
+                tripId = trip.id,
+                driverMemberId = driverMemberId,
+                driverNickname = driver.member.nickname,
+                riderMemberIds = riders.map { (crewMember, _, _) -> crewMember.member.id },
+            ),
+        )
         return toResult(trip)
     }
 
@@ -107,6 +122,15 @@ class TripServiceImpl(
         if (!boarding.isBoarded) {
             if (command.odometerKm < trip.startOdometerKm) throw BusinessException(ErrorCode.INVALID_ODOMETER)
             boarding.board(command.occurredAt, command.odometerKm)
+            eventPublisher.publishEvent(
+                RiderBoardedEvent(
+                    tripId = tripId,
+                    driverMemberId = driverMemberId,
+                    riderMemberId = boarding.crewMember.member.id,
+                    riderCrewMemberId = crewMemberId,
+                    riderNickname = boarding.crewMember.member.nickname,
+                ),
+            )
         }
         return toResult(trip)
     }
@@ -129,26 +153,52 @@ class TripServiceImpl(
     }
 
     @Transactional
-    override fun changeBoardPlace(driverMemberId: Long, tripId: Long, crewMemberId: Long, placeId: Long): TripResult {
-        val trip = getTripOfDriver(driverMemberId, tripId)
-        if (trip.isEnded) throw BusinessException(ErrorCode.TRIP_ALREADY_ENDED)
+    override fun changeBoardPlace(requesterMemberId: Long, tripId: Long, crewMemberId: Long, placeId: Long): TripResult {
+        val trip = getTripEntity(tripId)
         val boarding = getBoarding(tripId, crewMemberId)
+        val byRider = authorizeDriverOrRider(requesterMemberId, trip, boarding)
+        if (trip.isEnded) throw BusinessException(ErrorCode.TRIP_ALREADY_ENDED)
         if (boarding.isBoarded) throw BusinessException(ErrorCode.BOARDING_ALREADY_BOARDED)
 
-        boarding.changeBoardPlace(crewPlaceService.getPlaceEntity(trip.driver.crew.id, placeId))
+        val place = crewPlaceService.getPlaceEntity(trip.driver.crew.id, placeId)
+        boarding.changeBoardPlace(place)
         val places = boardingRepository.findAllByTripIdOrderById(tripId).flatMap { listOf(it.boardPlace, it.alightPlace) }
         validateWaypointCount(trip.originPlace, trip.destinationPlace, places)
+
+        eventPublisher.publishEvent(
+            BoardPlaceChangedEvent(
+                tripId = tripId,
+                driverMemberId = trip.driver.member.id,
+                riderCrewMemberId = crewMemberId,
+                riderNickname = boarding.crewMember.member.nickname,
+                placeId = place.id,
+                placeName = place.name,
+                latitude = place.latitude,
+                longitude = place.longitude,
+                byRider = byRider,
+            ),
+        )
         return toResult(trip)
     }
 
     @Transactional
-    override fun cancelBoarding(driverMemberId: Long, tripId: Long, crewMemberId: Long): TripResult {
-        val trip = getTripOfDriver(driverMemberId, tripId)
-        if (trip.isEnded) throw BusinessException(ErrorCode.TRIP_ALREADY_ENDED)
+    override fun cancelBoarding(requesterMemberId: Long, tripId: Long, crewMemberId: Long): TripResult {
+        val trip = getTripEntity(tripId)
         val boarding = getBoarding(tripId, crewMemberId)
+        val byRider = authorizeDriverOrRider(requesterMemberId, trip, boarding)
+        if (trip.isEnded) throw BusinessException(ErrorCode.TRIP_ALREADY_ENDED)
         if (boarding.isBoarded) throw BusinessException(ErrorCode.BOARDING_ALREADY_BOARDED)
 
         boardingRepository.delete(boarding)
+        eventPublisher.publishEvent(
+            BoardingCanceledEvent(
+                tripId = tripId,
+                driverMemberId = trip.driver.member.id,
+                riderCrewMemberId = crewMemberId,
+                riderNickname = boarding.crewMember.member.nickname,
+                byRider = byRider,
+            ),
+        )
         return toResult(trip)
     }
 
@@ -195,9 +245,11 @@ class TripServiceImpl(
         if (command.endOdometerKm < trip.startOdometerKm) throw BusinessException(ErrorCode.INVALID_ODOMETER)
 
         trip.end(command.endedAt, command.endOdometerKm, command.tollFareWon, command.routePolyline)
-        boardingRepository.findAllByTripIdOrderById(tripId)
+        val boardings = boardingRepository.findAllByTripIdOrderById(tripId)
+        boardings
             .filter { it.isBoarded && !it.isAlighted }
             .forEach { it.alight(command.endedAt, command.endOdometerKm) }
+        eventPublisher.publishEvent(TripEndedEvent(tripId = tripId, riderMemberIds = boardings.map { it.crewMember.member.id }))
         return toResult(trip)
     }
 
@@ -252,6 +304,14 @@ class TripServiceImpl(
         if (trip.driver.member.id != driverMemberId) throw BusinessException(ErrorCode.TRIP_ACCESS_DENIED)
         return trip
     }
+
+    // 운전자나 그 탑승의 동승자 본인만 허용. 동승자 본인이면 true
+    private fun authorizeDriverOrRider(requesterMemberId: Long, trip: Trip, boarding: Boarding): Boolean =
+        when (requesterMemberId) {
+            trip.driver.member.id -> false
+            boarding.crewMember.member.id -> true
+            else -> throw BusinessException(ErrorCode.TRIP_ACCESS_DENIED)
+        }
 
     private fun getBoarding(tripId: Long, crewMemberId: Long): Boarding =
         boardingRepository.findByTripIdAndCrewMemberId(tripId, crewMemberId)

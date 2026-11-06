@@ -16,11 +16,18 @@ import com.fullaccel.paircarserver.trip.application.dto.EndTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.RiderCommand
 import com.fullaccel.paircarserver.trip.application.dto.SegmentCommand
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
+import com.fullaccel.paircarserver.trip.application.event.BoardPlaceChangedEvent
+import com.fullaccel.paircarserver.trip.application.event.BoardingCanceledEvent
+import com.fullaccel.paircarserver.trip.application.event.RiderBoardedEvent
+import com.fullaccel.paircarserver.trip.application.event.TripEndedEvent
+import com.fullaccel.paircarserver.trip.application.event.TripStartedEvent
 import com.fullaccel.paircarserver.trip.domain.FuelEconomySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.event.ApplicationEvents
+import org.springframework.test.context.event.RecordApplicationEvents
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -28,6 +35,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 @IntegrationTest
+@RecordApplicationEvents
 class TripServiceTest(
     @Autowired private val tripService: TripService,
     @Autowired private val memberService: MemberService,
@@ -35,6 +43,9 @@ class TripServiceTest(
     @Autowired private val crewService: CrewService,
     @Autowired private val crewPlaceService: CrewPlaceService,
 ) {
+
+    @Autowired
+    private lateinit var events: ApplicationEvents
 
     private var jihoon = 0L // 운전자 멤버 ID
     private var crewId = 0L
@@ -64,6 +75,8 @@ class TripServiceTest(
         crewPlaceService.registerPlace(crewId, RegisterPlaceCommand(name, BigDecimal("37.4"), BigDecimal("127.1"))).placeId
 
     private fun km(value: String) = BigDecimal(value)
+
+    private fun memberIdOf(crewMemberId: Long) = crewService.getCrewMemberEntity(crewMemberId).member.id
 
     private fun start(vararg riders: RiderCommand, startedAt: Instant = Instant.parse("2026-11-06T23:30:00Z")) =
         tripService.startTrip(
@@ -254,5 +267,64 @@ class TripServiceTest(
         assertNull(minjunBoarding.boardedAt) // 안 탄 동승자는 그대로 미탑승
         assertEquals(1200, again.tollFareWon)
         assertEquals(0, km("10015.0").compareTo(again.endOdometerKm))
+    }
+
+    @Test
+    fun `운행을 시작하면 동승자 멤버 ID를 담은 TripStartedEvent를 발행한다`() {
+        val trip = start(RiderCommand(sua, gate, office), RiderCommand(minjun, gate, office))
+
+        val event = events.stream(TripStartedEvent::class.java).toList().single()
+        assertEquals(trip.tripId, event.tripId)
+        assertEquals("지훈", event.driverNickname)
+        assertEquals(setOf(memberIdOf(sua), memberIdOf(minjun)), event.riderMemberIds.toSet())
+    }
+
+    @Test
+    fun `같은 탑승 이벤트가 두 번 와도 RiderBoardedEvent는 한 번만 발행한다`() {
+        val trip = start(RiderCommand(sua, gate, office))
+
+        tripService.recordBoarding(jihoon, trip.tripId, sua, event("10003.0"))
+        tripService.recordBoarding(jihoon, trip.tripId, sua, event("10003.0"))
+
+        assertEquals(1, events.stream(RiderBoardedEvent::class.java).count())
+    }
+
+    @Test
+    fun `동승자 본인이 불참하면 byRider인 BoardingCanceledEvent를 발행한다`() {
+        val trip = start(RiderCommand(sua, gate, office))
+
+        tripService.cancelBoarding(memberIdOf(sua), trip.tripId, sua)
+
+        assertEquals(true, events.stream(BoardingCanceledEvent::class.java).toList().single().byRider)
+    }
+
+    @Test
+    fun `운전자가 탈 지점을 바꾸면 byRider가 false다`() {
+        val trip = start(RiderCommand(sua, gate, office))
+
+        tripService.changeBoardPlace(jihoon, trip.tripId, sua, backGate)
+
+        val event = events.stream(BoardPlaceChangedEvent::class.java).toList().single()
+        assertEquals(false, event.byRider)
+        assertEquals("○○아파트 후문", event.placeName)
+    }
+
+    @Test
+    fun `다른 동승자의 탑승은 불참 처리할 수 없다`() {
+        val trip = start(RiderCommand(sua, gate, office), RiderCommand(minjun, gate, office))
+
+        val e = assertThrows<BusinessException> { tripService.cancelBoarding(memberIdOf(minjun), trip.tripId, sua) }
+
+        assertEquals(ErrorCode.TRIP_ACCESS_DENIED, e.errorCode)
+    }
+
+    @Test
+    fun `운행 종료는 한 번만 TripEndedEvent를 발행한다`() {
+        val trip = start(RiderCommand(sua, gate, office))
+
+        tripService.endTrip(jihoon, trip.tripId, EndTripCommand(Instant.parse("2026-11-07T00:20:00Z"), km("10015.0")))
+        tripService.endTrip(jihoon, trip.tripId, EndTripCommand(Instant.parse("2026-11-07T00:20:00Z"), km("10015.0")))
+
+        assertEquals(listOf(memberIdOf(sua)), events.stream(TripEndedEvent::class.java).toList().single().riderMemberIds)
     }
 }

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(
     name = "운행",
-    description = "차량 앱이 호출. 쓰기 요청은 그 운행의 운전자만 할 수 있음. 모든 응답은 운행 전체 상태(TripResult)를 돌려줌. " +
+    description = "차량 앱이 호출. 쓰기 요청은 그 운행의 운전자만 할 수 있음(탈 지점 변경, 불참은 동승자 본인도 가능). 모든 응답은 운행 전체 상태(TripResult)를 돌려줌. " +
         "탑승, 하차, 구간, 종료는 같은 요청을 다시 보내도 결과가 같음",
 )
 @RestController
@@ -80,7 +80,11 @@ class TripController(
     ): ApiResponse<TripResult> =
         ApiResponse.ok(tripService.recordAlighting(memberId, tripId, crewMemberId, request.toCommand()))
 
-    @Operation(summary = "탈 지점 변경", description = "\"오늘은 후문에서 탈게요\". 탑승 전에만 가능하고, 응답의 waypoints로 경유지를 한 번 갱신합니다.")
+    @Operation(
+        summary = "탈 지점 변경",
+        description = "\"오늘은 후문에서 탈게요\". 운전자나 동승자 본인이 탑승 전에만 할 수 있습니다. " +
+            "운전자는 응답의 waypoints로 경유지를 한 번 갱신하고, 동승자가 바꾸면 운전자에게 rider.place-changed가 갑니다.",
+    )
     @PutMapping("/{tripId}/boardings/{crewMemberId}/board-place")
     fun changeBoardPlace(
         @LoginMember memberId: Long,
@@ -90,7 +94,11 @@ class TripController(
     ): ApiResponse<TripResult> =
         ApiResponse.ok(tripService.changeBoardPlace(memberId, tripId, crewMemberId, request.placeId))
 
-    @Operation(summary = "불참", description = "\"오늘은 안 타요\". 탑승 전에만 가능하고, 이 운행 정산에서 빠집니다.")
+    @Operation(
+        summary = "불참",
+        description = "\"오늘은 안 타요\". 운전자나 동승자 본인이 탑승 전에만 할 수 있고, 이 운행 정산에서 빠집니다. " +
+            "동승자가 하면 운전자에게 rider.absent가 갑니다.",
+    )
     @DeleteMapping("/{tripId}/boardings/{crewMemberId}")
     fun cancelBoarding(
         @LoginMember memberId: Long,

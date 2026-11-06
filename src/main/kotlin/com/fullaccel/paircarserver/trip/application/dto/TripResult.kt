@@ -13,6 +13,8 @@ data class TripResult(
     val tripId: Long,
     val crewId: Long,
     val driverCrewMemberId: Long,
+    val driverMemberId: Long,
+    val driverNickname: String,
     val carId: Long,
     val origin: PlaceSummary,
     val destination: PlaceSummary,
@@ -39,6 +41,8 @@ data class TripResult(
                 tripId = trip.id,
                 crewId = trip.driver.crew.id,
                 driverCrewMemberId = trip.driver.id,
+                driverMemberId = trip.driver.member.id,
+                driverNickname = trip.driver.member.nickname,
                 carId = trip.car.id,
                 origin = PlaceSummary.from(trip.originPlace),
                 destination = PlaceSummary.from(trip.destinationPlace),
@@ -70,6 +74,7 @@ data class PlaceSummary(
 data class BoardingResult(
     val boardingId: Long,
     val crewMemberId: Long,
+    val memberId: Long,
     val nickname: String,
     val boardPlaceId: Long,
     val alightPlaceId: Long,
@@ -82,6 +87,7 @@ data class BoardingResult(
         fun from(boarding: Boarding) = BoardingResult(
             boardingId = boarding.id,
             crewMemberId = boarding.crewMember.id,
+            memberId = boarding.crewMember.member.id,
             nickname = boarding.crewMember.member.nickname,
             boardPlaceId = boarding.boardPlace.id,
             alightPlaceId = boarding.alightPlace.id,

@@ -16,6 +16,7 @@ enum class ErrorCode(
     DATA_CONFLICT(HttpStatus.CONFLICT, "이미 존재하거나 다른 데이터와 충돌합니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증 토큰이 없거나 유효하지 않습니다."),
+    LIVE_TICKET_INVALID(HttpStatus.UNAUTHORIZED, "실시간 구독 티켓이 없거나 만료되었습니다."),
 
     // 멤버
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버를 찾을 수 없습니다."),
@@ -40,7 +41,7 @@ enum class ErrorCode(
 
     // 운행
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "운행을 찾을 수 없습니다."),
-    TRIP_ACCESS_DENIED(HttpStatus.FORBIDDEN, "이 운행의 운전자만 요청할 수 있습니다."),
+    TRIP_ACCESS_DENIED(HttpStatus.FORBIDDEN, "이 운행에 대한 권한이 없습니다."),
     TRIP_ALREADY_IN_PROGRESS(HttpStatus.CONFLICT, "이미 진행 중인 운행이 있습니다."),
     TRIP_ALREADY_ENDED(HttpStatus.CONFLICT, "이미 끝난 운행입니다."),
     BANK_ACCOUNT_REQUIRED(HttpStatus.BAD_REQUEST, "운행을 시작하려면 운전자 계좌를 먼저 등록해야 합니다."),

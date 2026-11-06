@@ -9,8 +9,10 @@ import com.fullaccel.paircarserver.trip.application.dto.TripResult
 import com.fullaccel.paircarserver.trip.domain.Boarding
 import java.time.LocalDate
 
-// 운행, 탑승, 구간. 쓰기 요청은 모두 그 운행의 운전자(driverMemberId)만 할 수 있음
+// 운행, 탑승, 구간. 쓰기 요청은 그 운행의 운전자(driverMemberId)만 할 수 있음
+// 예외: 탈 지점 변경, 불참은 동승자 본인도 할 수 있음 (requesterMemberId)
 // 탑승, 하차, 구간, 종료는 같은 요청이 다시 와도 결과가 같음 (차량 앱 오프라인 버퍼 재전송 대비)
+// 상태가 바뀌면 커밋 뒤에 trip.application.event의 이벤트를 발행함
 interface TripService {
 
     // 검증: 크루 소속, 차량 등록(규칙 1), 장소 소속(규칙 2, 4), 동승자 소속과 운전자 제외(규칙 3),
@@ -26,11 +28,11 @@ interface TripService {
     // 탑승 전이면 BOARDING_NOT_BOARDED. 이미 하차 기록이 있으면 처음 값을 유지함
     fun recordAlighting(driverMemberId: Long, tripId: Long, crewMemberId: Long, command: BoardingEventCommand): TripResult
 
-    // "오늘은 후문에서 탈게요". 탑승 전에만 가능
-    fun changeBoardPlace(driverMemberId: Long, tripId: Long, crewMemberId: Long, placeId: Long): TripResult
+    // "오늘은 후문에서 탈게요". 탑승 전에만 가능. 운전자나 동승자 본인이 요청
+    fun changeBoardPlace(requesterMemberId: Long, tripId: Long, crewMemberId: Long, placeId: Long): TripResult
 
-    // "오늘은 안 타요". 탑승 전에만 가능. 탑승 행을 지워 정산에서 빠짐
-    fun cancelBoarding(driverMemberId: Long, tripId: Long, crewMemberId: Long): TripResult
+    // "오늘은 안 타요". 탑승 전에만 가능. 탑승 행을 지워 정산에서 빠짐. 운전자나 동승자 본인이 요청
+    fun cancelBoarding(requesterMemberId: Long, tripId: Long, crewMemberId: Long): TripResult
 
     // 이미 저장된 seq는 건너뜀. 구간은 seq 순서대로 이어져야 하고(규칙 8), 동승자는 이 운행에 탄 사람이어야 함
     fun uploadSegments(driverMemberId: Long, tripId: Long, segments: List<SegmentCommand>): TripResult

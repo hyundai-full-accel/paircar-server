@@ -46,6 +46,15 @@ class CrewServiceImpl(
         return crewMemberRepository.findAllByCrewIdOrderById(crewId).map(CrewMemberResult::from)
     }
 
+    override fun getCrewsOfMember(memberId: Long): List<CrewResult> =
+        crewMemberRepository.findAllByMemberIdOrderById(memberId).map { CrewResult.from(it.crew) }
+
+    override fun validateCrewAccess(crewId: Long, memberId: Long): Long {
+        getCrewEntity(crewId)
+        return crewMemberRepository.findByCrewIdAndMemberId(crewId, memberId)?.id
+            ?: throw BusinessException(ErrorCode.CREW_ACCESS_DENIED)
+    }
+
     @Transactional
     override fun changeManualFuelPrice(crewId: Long, priceWon: Int?): CrewResult {
         val crew = getCrewEntity(crewId)

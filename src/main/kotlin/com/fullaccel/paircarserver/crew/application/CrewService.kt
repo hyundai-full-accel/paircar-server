@@ -18,6 +18,12 @@ interface CrewService {
 
     fun getCrewMembers(crewId: Long): List<CrewMemberResult>
 
+    // 멤버가 참여한 크루 목록
+    fun getCrewsOfMember(memberId: Long): List<CrewResult>
+
+    // API 접근 검증: 멤버가 이 크루에 없으면 CREW_ACCESS_DENIED. 있으면 그 크루 멤버 ID를 반환
+    fun validateCrewAccess(crewId: Long, memberId: Long): Long
+
     // 공공 유가 API를 못 쓸 때 크루가 직접 넣는 유가. null이면 해제
     fun changeManualFuelPrice(crewId: Long, priceWon: Int?): CrewResult
 

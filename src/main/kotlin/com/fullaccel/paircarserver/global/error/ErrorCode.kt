@@ -27,6 +27,9 @@ enum class ErrorCode(
     // 크루
     CREW_NOT_FOUND(HttpStatus.NOT_FOUND, "크루를 찾을 수 없습니다."),
     CREW_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "크루 멤버를 찾을 수 없습니다."),
+    CREW_ACCESS_DENIED(HttpStatus.FORBIDDEN, "크루 멤버만 요청할 수 있습니다."),
+    INVITE_NOT_FOUND(HttpStatus.NOT_FOUND, "초대 코드를 찾을 수 없습니다."),
+    INVITE_EXPIRED(HttpStatus.GONE, "만료된 초대 코드입니다."),
     CREW_MEMBER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 크루에 참여한 멤버입니다."),
     CREW_MISMATCH(HttpStatus.BAD_REQUEST, "같은 크루 소속이 아닙니다."),
     CREW_PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "크루 장소를 찾을 수 없습니다."),

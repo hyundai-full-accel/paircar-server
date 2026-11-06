@@ -11,4 +11,7 @@ interface CrewMemberRepository : JpaRepository<CrewMember, Long> {
 
     @EntityGraph(attributePaths = ["member"])
     fun findAllByCrewIdOrderById(crewId: Long): List<CrewMember>
+
+    @EntityGraph(attributePaths = ["crew"])
+    fun findAllByMemberIdOrderById(memberId: Long): List<CrewMember>
 }

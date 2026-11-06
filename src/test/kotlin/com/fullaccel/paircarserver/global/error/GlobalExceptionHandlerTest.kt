@@ -1,5 +1,6 @@
 package com.fullaccel.paircarserver.global.error
 
+import com.fullaccel.paircarserver.global.auth.TokenAuthenticator
 import com.fullaccel.paircarserver.global.response.ApiResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
@@ -23,6 +25,10 @@ import org.springframework.web.bind.annotation.RestController
 class GlobalExceptionHandlerTest(
     @Autowired private val mockMvc: MockMvc,
 ) {
+
+    // WebConfig의 토큰 리졸버가 필요로 함. 이 테스트는 인증을 쓰지 않음
+    @MockitoBean
+    private lateinit var tokenAuthenticator: TokenAuthenticator
 
     @Test
     fun `성공 응답은 success와 data만 담는다`() {

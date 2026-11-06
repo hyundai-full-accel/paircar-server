@@ -15,6 +15,7 @@ enum class ErrorCode(
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다."),
     DATA_CONFLICT(HttpStatus.CONFLICT, "이미 존재하거나 다른 데이터와 충돌합니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증 토큰이 없거나 유효하지 않습니다."),
 
     // 멤버
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버를 찾을 수 없습니다."),

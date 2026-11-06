@@ -18,4 +18,8 @@ enum class ErrorCode(
 
     // 멤버
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버를 찾을 수 없습니다."),
+
+    // 차량
+    CAR_NOT_FOUND(HttpStatus.NOT_FOUND, "차량을 찾을 수 없습니다."),
+    CAR_NOT_REGISTERED_TO_MEMBER(HttpStatus.FORBIDDEN, "멤버가 등록하지 않은 차량입니다."),
 }

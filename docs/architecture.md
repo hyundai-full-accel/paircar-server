@@ -3,6 +3,7 @@
 페어카는 차량 앱, 동승자 웹, 크루 서버 세 부분으로 이루어집니다. 이 문서는 전체 구성과 크루 서버(이 저장소)의 내부 구조를 설명합니다.
 
 - 데이터 모델: [schema.dbml](schema.dbml)
+- 핵심 시퀀스: [sequences.md](sequences.md)
 - API 명세: 서버 실행 후 `/swagger-ui.html`
 
 ## 1. 전체 구성

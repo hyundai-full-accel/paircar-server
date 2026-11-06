@@ -57,26 +57,13 @@ Web Push는 웹 표준(VAPID, RFC 8030·8291·8292)을 그대로 씁니다. Fire
 
 ### 인증
 
-로그인 화면 없이 기기 토큰으로 멤버를 구분합니다.
+로그인 화면 없이 기기 토큰으로 멤버를 구분합니다. 호출 순서는 [sequences.md 1~3](sequences.md#1-처음-설정-운전자)에 있습니다.
 
-```mermaid
-sequenceDiagram
-    participant C as 차량 앱 (지훈)
-    participant S as 크루 서버
-    participant W as 동승자 웹 (수아)
-
-    C->>S: POST /api/members {nickname}
-    S-->>C: token (한 번만 응답, DB에는 SHA-256 해시만 저장)
-    C->>S: POST /api/crews/{id}/invites
-    S-->>C: code, inviteUrl
-    C-->>W: 초대 링크 공유 (메신저, 차량 화면 QR)
-    W->>S: POST /api/invites/{code}/members {nickname}
-    S-->>W: token, crewMemberId
-    Note over C,W: 이후 모든 요청: Authorization: Bearer {token}
-```
-
-- 초대 코드는 헷갈리는 글자(0, 1, I, L, O)를 뺀 8자이고 7일 뒤 만료됩니다.
-- SSE는 브라우저가 인증 헤더를 붙일 수 없어서, 토큰으로 60초짜리 일회용 티켓을 받고 구독 URL에는 티켓만 넣습니다.
+| 항목 | 설계 |
+|---|---|
+| 기기 토큰 | 멤버 생성, 초대 참여 때 발급. 원문은 응답에서 한 번만 주고 DB에는 SHA-256 해시만 저장. 180일 유효 |
+| 초대 코드 | 헷갈리는 글자(0, 1, I, L, O)를 뺀 8자. 7일 뒤 만료. 입력할 때 대소문자, 하이픈 무시. 링크 주소는 환경변수로 설정 |
+| SSE 구독 | 브라우저 `EventSource`는 인증 헤더를 붙일 수 없어서, 토큰으로 60초짜리 일회용 티켓을 받고 구독 URL에는 티켓만 넣음 (토큰이 URL, 로그에 남지 않도록) |
 
 ## 2. 크루 서버: 모듈러 모놀리스
 
@@ -137,31 +124,9 @@ flowchart TD
 | 인증 | 컨트롤러 파라미터의 `@LoginMember`가 Bearer 토큰을 멤버 ID로 바꿉니다 |
 | 시간 | 저장은 UTC, 운행일과 정산 월은 KST |
 
-## 3. 주요 흐름
+## 3. 서버 안의 흐름
 
-### 운행 한 번
-
-```mermaid
-sequenceDiagram
-    participant C as 차량 앱
-    participant S as 크루 서버
-    participant W as 동승자 웹
-
-    C->>S: POST /api/trips (시동)
-    S-->>C: tripId, waypoints
-    S--)W: trip.started (SSE + Push)
-    loop 5~10초마다
-        C->>S: POST /trips/{id}/live/location
-        S--)W: vehicle.location (SSE)
-    end
-    C->>S: POST /trips/{id}/live/riders/{id}/approaching (300m)
-    S--)W: vehicle.approaching (SSE + Push)
-    C->>S: POST /trips/{id}/boardings/{id}/board (도어 → 벨트)
-    S--)W: rider.boarded (SSE)
-    C->>S: POST /trips/{id}/segments
-    C->>S: POST /trips/{id}/end
-    S--)W: trip.ended (SSE)
-```
+클라이언트와 오가는 호출 순서는 [sequences.md](sequences.md)에 있습니다. 여기서는 요청 하나가 서버 모듈 사이를 어떻게 지나가는지만 다룹니다.
 
 ### 도메인 이벤트에서 알림까지
 
@@ -193,8 +158,8 @@ flowchart LR
     G -- "커밋 뒤" --> H["live: receipt.issued<br/>(SSE + Push)"]
 ```
 
-- 발행된 영수증은 바뀌지 않습니다. 발행 뒤에 늦게 올라온 탑승은 다음 달 영수증에 들어갑니다.
-- 우회 거리는 운전자와 동승자가 둘 다 확인한 값만 씁니다.
+- 정산은 다른 모듈의 리포지토리를 쓰지 않고, `TripService`, `CrewDetourService`가 주는 데이터만 받습니다.
+- 계산은 `SettlementCalculator`에 모여 있어서 DB 없이 단위 테스트합니다.
 
 ## 4. 데이터
 

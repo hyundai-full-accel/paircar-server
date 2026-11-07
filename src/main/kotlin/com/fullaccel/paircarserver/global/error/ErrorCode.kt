@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus
 
 // 응답의 error.code로 나가는 값. 도메인 에러는 기능을 만들 때 아래에 추가함
 // 재시도 기준: 5xx와 429만 재시도. 그 밖의 4xx는 같은 요청을 다시 보내도 실패하므로 버림
-// 게이트웨이(nginx)가 직접 내는 코드: TOO_MANY_REQUESTS(429), SERVICE_UNAVAILABLE(503). infra/nginx/paircar.conf 참고
+// 게이트웨이(nginx)가 직접 내는 코드: TOO_MANY_REQUESTS(429), SERVICE_UNAVAILABLE(503). infra/nginx/shared/locations.conf 참고
 enum class ErrorCode(
     val status: HttpStatus,
     val message: String,

@@ -192,4 +192,4 @@ flowchart LR
 | 테스트 | JUnit 5, Testcontainers (PostgreSQL), MockMvc |
 | 로컬 개발 | `./gradlew bootRun` 시 `infra/compose.local.yaml`의 PostgreSQL 자동 실행 |
 | 배포 | `infra/Dockerfile` (멀티 스테이지, 레이어 분리 JRE 이미지), `infra/compose.yaml` (nginx + 서버 + PostgreSQL) |
-| 게이트웨이 | nginx 1.27 (`infra/nginx/paircar.conf`) |
+| 게이트웨이 | nginx 1.27 (`infra/nginx/`, 로컬 HTTP, 서버 HTTPS + Let's Encrypt). 실행 방법은 [infra/README.md](../infra/README.md) |

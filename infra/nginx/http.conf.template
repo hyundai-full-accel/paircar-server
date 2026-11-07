@@ -1,0 +1,9 @@
+# 로컬 (HTTP). infra/compose.yaml이 /etc/nginx/templates/default.conf.template로 마운트
+include /etc/nginx/paircar/upstream.conf;
+
+server {
+    listen 80;
+    server_name _;
+
+    include /etc/nginx/paircar/locations.conf;
+}

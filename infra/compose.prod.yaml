@@ -1,0 +1,27 @@
+# 서버(HTTPS) 전용 덧붙임. compose.yaml과 함께 씀
+#   docker compose -f infra/compose.yaml -f infra/compose.prod.yaml up -d --build --wait
+# 같은 컨테이너 경로에 마운트하면 이 파일 쪽이 이김 (nginx 설정을 HTTPS 템플릿으로 교체)
+# 처음 한 번 인증서 발급이 필요함: infra/README.md 참고
+
+services:
+  nginx:
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN을 infra/.env에 설정하세요}
+    ports:
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/https.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - certbot-www:/var/www/certbot:ro
+      - letsencrypt:/etc/letsencrypt:ro
+
+  # 인증서 발급, 갱신용. 평소에는 뜨지 않음 (docker compose run으로만 실행)
+  certbot:
+    image: certbot/certbot:v5.8.0
+    profiles: ["certbot"]
+    volumes:
+      - certbot-www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+
+volumes:
+  certbot-www:
+  letsencrypt:

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.DecimalMax
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Digits
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.Size
 import java.math.BigDecimal
 
@@ -16,12 +15,6 @@ data class CreateCrewRequest(
     @field:NotBlank
     @field:Size(max = 50)
     val name: String,
-)
-
-data class ChangeFuelPriceRequest(
-    @field:Schema(description = "직접 입력 유가 (원/L, EV는 원/kWh). null이면 해제하고 공공 유가를 씀", example = "1684", nullable = true)
-    @field:Positive
-    val priceWon: Int?,
 )
 
 data class JoinAsNewMemberRequest(

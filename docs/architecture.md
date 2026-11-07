@@ -153,8 +153,9 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A["POST /crews/{id}/receipts?month="] --> B["SettlementService"]
-    B -- "끝난 운행, 탑승, 구간" --> C["TripService"]
+    S["MonthlySettlementScheduler<br/>(매달 1일 04:00 KST, 지난달)"] --> B["SettlementService"]
+    A["POST /crews/{id}/receipts?month=<br/>(자동 발행 실패 시 재시도, 끝난 달만)"] --> B
+    B -- "끝난 운행, 탑승, 구간,<br/>운행 차량의 유가" --> C["TripService"]
     B -- "확인된 우회 거리" --> D["CrewDetourService"]
     B --> E["SettlementCalculator<br/>(순수 계산)"]
     E --> F["receipts + receipt_items 저장<br/>(계좌, 연비, 유가 스냅샷)"]
@@ -164,6 +165,8 @@ flowchart LR
 
 - 정산은 다른 모듈의 리포지토리를 쓰지 않고, `TripService`, `CrewDetourService`가 주는 데이터만 받습니다.
 - 계산은 `SettlementCalculator`에 모여 있어서 DB 없이 단위 테스트합니다.
+- 유가는 차량에 둡니다(`cars.manual_fuel_price_won`). 운전자 교체로 연료가 다른 차가 섞여도 운행마다 그 차의 유가를 쓰고, 차를 등록한 멤버만 바꿀 수 있어 내는 사람이 금액을 정하는 일이 없습니다.
+- 크루에 "운전자" 역할을 두지 않습니다. 운전자는 운행마다 정해지고, 발행은 서버가 자동으로 합니다.
 
 ## 4. 데이터
 

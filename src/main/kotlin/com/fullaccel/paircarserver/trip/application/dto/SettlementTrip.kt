@@ -10,6 +10,7 @@ data class SettlementTrip(
     val tripId: Long,
     val driverCrewMemberId: Long,
     val fuelType: FuelType,
+    val manualFuelPriceWon: Int?, // 운행 차량의 직접 입력 유가. 없으면 연료별 공공 월평균
     val serviceDate: LocalDate,
     val originPlaceId: Long,
     val destinationPlaceId: Long,

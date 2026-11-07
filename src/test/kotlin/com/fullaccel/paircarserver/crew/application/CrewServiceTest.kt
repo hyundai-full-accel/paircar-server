@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @IntegrationTest
 class CrewServiceTest(
@@ -55,15 +54,6 @@ class CrewServiceTest(
         val e = assertThrows<BusinessException> { crewService.getCrewMemberEntity(crew.crewId, sua.memberId) }
 
         assertEquals(ErrorCode.CREW_MEMBER_NOT_FOUND, e.errorCode)
-    }
-
-    @Test
-    fun `직접 입력 유가를 넣고 해제한다`() {
-        val jihoon = memberService.createMember("지훈")
-        val crew = crewService.createCrew(jihoon.memberId, "판교 출근 크루")
-
-        assertEquals(1684, crewService.changeManualFuelPrice(crew.crewId, 1684).manualFuelPriceWon)
-        assertNull(crewService.changeManualFuelPrice(crew.crewId, null).manualFuelPriceWon)
     }
 
     @Test

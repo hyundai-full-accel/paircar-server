@@ -4,6 +4,7 @@ import com.fullaccel.paircarserver.crew.domain.SettlementMode
 import com.fullaccel.paircarserver.settlement.domain.Receipt
 import com.fullaccel.paircarserver.settlement.domain.ReceiptItem
 import com.fullaccel.paircarserver.trip.domain.FuelEconomySource
+import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -24,7 +25,12 @@ data class ReceiptResult(
     val boardingDays: Int,             // 탑승일
     val sharedDistanceKm: BigDecimal,  // 함께 탄 거리
     val detourKm: BigDecimal,          // 우회 거리 합계
-    val ownDistanceKm: BigDecimal,     // 내 부담 거리 (유류비 ÷ km당 비용)
+    @field:Schema(
+        description = "내 부담 거리 (km) = 유류비 ÷ km당 비용. 함께 탄 구간은 구간 인원으로 나눈 몫이고, 우회 거리는 전부 포함. " +
+            "기획서 영수증의 '내 몫 거리'",
+        example = "162.0",
+    )
+    val ownDistanceKm: BigDecimal,
     val fuelEconomy: BigDecimal,       // 평균 연비
     val fuelEconomySource: FuelEconomySource,
     val fuelPriceWon: Int,             // 평균 유가

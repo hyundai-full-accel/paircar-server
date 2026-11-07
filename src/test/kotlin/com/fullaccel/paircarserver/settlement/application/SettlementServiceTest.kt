@@ -3,6 +3,7 @@ package com.fullaccel.paircarserver.settlement.application
 import com.fullaccel.paircarserver.IntegrationTest
 import com.fullaccel.paircarserver.car.application.CarService
 import com.fullaccel.paircarserver.car.application.dto.RegisterCarCommand
+import com.fullaccel.paircarserver.car.application.dto.UpdateCarCommand
 import com.fullaccel.paircarserver.car.domain.FuelType
 import com.fullaccel.paircarserver.crew.application.CrewDetourService
 import com.fullaccel.paircarserver.crew.application.CrewPlaceService
@@ -45,12 +46,14 @@ class SettlementServiceTest(
     @Autowired private val crewService: CrewService,
     @Autowired private val crewPlaceService: CrewPlaceService,
     @Autowired private val crewDetourService: CrewDetourService,
+    @Autowired private val monthlySettlementScheduler: MonthlySettlementScheduler,
 ) {
 
     @Autowired
     private lateinit var events: ApplicationEvents
 
     private val november = YearMonth.of(2026, 11)
+    private val december = YearMonth.of(2026, 12) // 테스트의 오늘(2027-01-15) 기준 지난달
 
     private var jihoon = 0L      // 운전자 멤버 ID
     private var driverId = 0L    // 운전자 크루 멤버 ID
@@ -67,8 +70,8 @@ class SettlementServiceTest(
         jihoon = memberService.createMember("지훈").memberId
         memberService.registerBankAccount(jihoon, BankAccountCommand("○○은행", "3333-01-1234567", "지훈"))
         carId = carService.registerCar(jihoon, RegisterCarCommand("VK-1", FuelType.GASOLINE)).carId
+        carService.updateCar(jihoon, carId, UpdateCarCommand(FuelType.GASOLINE, null, 1684))
         crewId = crewService.createCrew(jihoon, "판교 출근 크루").crewId
-        crewService.changeManualFuelPrice(crewId, 1684)
         driverId = crewService.getCrewMemberEntity(crewId, jihoon).id
         sua = crewService.addMember(crewId, memberService.createMember("수아").memberId).crewMemberId
         home = place("지훈 집")
@@ -86,25 +89,32 @@ class SettlementServiceTest(
     }
 
     // 기획서 시나리오 하루: 집 → (혼자 5km) → 정문에서 수아 탑승 → (함께 12km) → 본관
-    private fun commute(date: LocalDate, toll: Int = 0) {
+    // 운전자 교체 시험은 driverMemberId, car, rider를 바꿔서 부름
+    private fun commute(
+        date: LocalDate,
+        toll: Int = 0,
+        driverMemberId: Long = jihoon,
+        car: Long = carId,
+        rider: Long = sua,
+    ) {
         val startedAt = date.atTime(LocalTime.of(8, 0)).atZone(ZoneId.of("Asia/Seoul")).toInstant()
         val start = odometer
         val boardAt = start + BigDecimal("5.0")
         val end = boardAt + BigDecimal("12.0")
         val trip = tripService.startTrip(
-            jihoon,
-            StartTripCommand(crewId, carId, home, office, startedAt, start, listOf(RiderCommand(sua, gate, office))),
+            driverMemberId,
+            StartTripCommand(crewId, car, home, office, startedAt, start, listOf(RiderCommand(rider, gate, office))),
         )
-        tripService.recordBoarding(jihoon, trip.tripId, sua, BoardingEventCommand(startedAt.plusSeconds(600), boardAt))
+        tripService.recordBoarding(driverMemberId, trip.tripId, rider, BoardingEventCommand(startedAt.plusSeconds(600), boardAt))
         tripService.uploadSegments(
-            jihoon,
+            driverMemberId,
             trip.tripId,
             listOf(
                 SegmentCommand(1, start, boardAt, BigDecimal("13.20"), FuelEconomySource.MEASURED, emptyList()),
-                SegmentCommand(2, boardAt, end, BigDecimal("13.20"), FuelEconomySource.MEASURED, listOf(sua)),
+                SegmentCommand(2, boardAt, end, BigDecimal("13.20"), FuelEconomySource.MEASURED, listOf(rider)),
             ),
         )
-        tripService.endTrip(jihoon, trip.tripId, EndTripCommand(startedAt.plusSeconds(1800), end, toll))
+        tripService.endTrip(driverMemberId, trip.tripId, EndTripCommand(startedAt.plusSeconds(1800), end, toll))
         odometer = end
     }
 
@@ -147,6 +157,33 @@ class SettlementServiceTest(
     }
 
     @Test
+    fun `우회 거리는 탑승 기록의 탈 지점, 내릴 지점과 같은 장소일 때만 쓴다`() {
+        // 차량 앱 연동에서 확인한 우회 거리가 0으로 나온 사례: 우회 거리를 등록한 장소와 운행 시작 때 보낸 탈 지점이 다름
+        val backGate = place("○○아파트 후문")
+        val detour = crewDetourService.registerDetour(crewId, RegisterDetourCommand(sua, driverId, backGate, BigDecimal("3.0")))
+        crewDetourService.confirmDetour(detour.detourId, driverId)
+        crewDetourService.confirmDetour(detour.detourId, sua)
+        commuteDays(november, 1) // 정문에서 탑승
+
+        val receipt = settlementService.issueReceipts(crewId, november).single()
+
+        assertDecimal("0", receipt.detourKm)
+    }
+
+    @Test
+    fun `출발지나 목적지에 등록한 우회 거리는 쓰지 않는다`() {
+        // 출발지, 목적지는 원래 가는 길이라 돌아가는 거리가 아님
+        val detour = crewDetourService.registerDetour(crewId, RegisterDetourCommand(sua, driverId, office, BigDecimal("3.0")))
+        crewDetourService.confirmDetour(detour.detourId, driverId)
+        crewDetourService.confirmDetour(detour.detourId, sua)
+        commuteDays(november, 1)
+
+        val receipt = settlementService.issueReceipts(crewId, november).single()
+
+        assertDecimal("0", receipt.detourKm)
+    }
+
+    @Test
     fun `통행료는 운전자 포함 인원으로 나눈다`() {
         commute(november.atDay(2), toll = 1200)
 
@@ -184,7 +221,7 @@ class SettlementServiceTest(
 
     @Test
     fun `유가 정보가 없으면 FUEL_PRICE_NOT_FOUND`() {
-        crewService.changeManualFuelPrice(crewId, null)
+        carService.updateCar(jihoon, carId, UpdateCarCommand(FuelType.GASOLINE, null, null))
         commuteDays(november, 1)
 
         val e = assertThrows<BusinessException> { settlementService.issueReceipts(crewId, november) }
@@ -216,5 +253,37 @@ class SettlementServiceTest(
         assertEquals(receipt.payerMemberId, event.payerMemberId)
         assertEquals(20_700, event.amountWon)
         assertEquals(november, event.month)
+    }
+
+    @Test
+    fun `끝나지 않은 달은 발행할 수 없다`() {
+        val e = assertThrows<BusinessException> { settlementService.issueReceipts(crewId, YearMonth.of(2027, 1)) }
+
+        assertEquals(ErrorCode.SETTLEMENT_MONTH_NOT_CLOSED, e.errorCode)
+    }
+
+    @Test
+    fun `매달 1일 자동 발행은 모든 크루의 지난달 영수증을 발행한다`() {
+        commuteDays(december, 2)
+
+        monthlySettlementScheduler.issueLastMonth()
+
+        val receipt = settlementService.getReceipts(crewId, december).single()
+        assertEquals(2, receipt.boardingDays)
+    }
+
+    @Test
+    fun `운전자가 바뀌면 운행에 쓴 차량의 유가로 계산한다`() {
+        val suaMemberId = crewService.getCrewMemberEntity(sua).member.id
+        memberService.registerBankAccount(suaMemberId, BankAccountCommand("○○은행", "1002-123-456789", "수아"))
+        val suaCar = carService.registerCar(suaMemberId, RegisterCarCommand("VK-2", FuelType.EV)).carId
+        carService.updateCar(suaMemberId, suaCar, UpdateCarCommand(FuelType.EV, null, 300))
+
+        commute(november.atDay(2))                                                         // 지훈 차(1684원/L), 수아 탑승
+        commute(november.atDay(3), driverMemberId = suaMemberId, car = suaCar, rider = driverId) // 수아 차(300원/kWh), 지훈 탑승
+
+        val receipts = settlementService.issueReceipts(crewId, november).associateBy { it.payeeNickname }
+        assertEquals(1684, receipts.getValue("지훈").fuelPriceWon)
+        assertEquals(300, receipts.getValue("수아").fuelPriceWon)
     }
 }

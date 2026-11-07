@@ -1,6 +1,5 @@
 package com.fullaccel.paircarserver.crew.api
 
-import com.fullaccel.paircarserver.crew.api.dto.ChangeFuelPriceRequest
 import com.fullaccel.paircarserver.crew.api.dto.CreateCrewRequest
 import com.fullaccel.paircarserver.crew.application.CrewInviteService
 import com.fullaccel.paircarserver.crew.application.CrewService
@@ -16,7 +15,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -62,17 +60,6 @@ class CrewController(
     ): ApiResponse<List<CrewMemberResult>> {
         crewService.validateCrewAccess(crewId, memberId)
         return ApiResponse.ok(crewService.getCrewMembers(crewId))
-    }
-
-    @Operation(summary = "직접 입력 유가 변경", description = "공공 유가 API를 못 쓸 때 크루가 정하는 유가입니다. 정산 때 공공 유가보다 우선합니다.")
-    @PutMapping("/{crewId}/fuel-price")
-    fun changeFuelPrice(
-        @LoginMember memberId: Long,
-        @PathVariable crewId: Long,
-        @Valid @RequestBody request: ChangeFuelPriceRequest,
-    ): ApiResponse<CrewResult> {
-        crewService.validateCrewAccess(crewId, memberId)
-        return ApiResponse.ok(crewService.changeManualFuelPrice(crewId, request.priceWon))
     }
 
     @Operation(summary = "초대 코드 발급", description = "7일 동안 유효합니다. 동승자에게 code가 들어간 링크를 보내세요.")

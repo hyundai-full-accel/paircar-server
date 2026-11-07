@@ -28,15 +28,6 @@ class Crew(
     @Column
     var monthlyFixedWon: Int? = null,
 
-    // 직접 입력한 유가 (공공 유가 API를 못 쓸 때만. 비어 있으면 fuel_prices 사용)
-    @Column
-    var manualFuelPriceWon: Int? = null,
-
     @Column(nullable = false, updatable = false)
     val createdAt: Instant = Instant.now(),
-) : BaseEntity() {
-
-    fun changeManualFuelPrice(priceWon: Int?) {
-        this.manualFuelPriceWon = priceWon
-    }
-}
+) : BaseEntity()

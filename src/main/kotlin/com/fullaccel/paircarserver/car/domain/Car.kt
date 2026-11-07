@@ -21,10 +21,21 @@ class Car(
     @Column(nullable = false, length = 20)
     var fuelType: FuelType,
 
-    // 입력 연비 (km/L, EV는 km/kWh). 실측 연비를 못 쓰는 차종만 크루 생성 때 입력
+    // 입력 연비 (km/L, EV는 km/kWh). 실측 연비를 못 쓰는 차종만 입력
     @Column(precision = 5, scale = 2)
     var manualFuelEconomy: BigDecimal? = null,
 
+    // 직접 입력 유가 (원/L, EV는 원/kWh). 집 충전 단가처럼 공공 평균과 다를 때만. 비어 있으면 fuel_prices 사용
+    @Column
+    var manualFuelPriceWon: Int? = null,
+
     @Column(nullable = false, updatable = false)
     val createdAt: Instant = Instant.now(),
-) : BaseEntity()
+) : BaseEntity() {
+
+    fun update(fuelType: FuelType, manualFuelEconomy: BigDecimal?, manualFuelPriceWon: Int?) {
+        this.fuelType = fuelType
+        this.manualFuelEconomy = manualFuelEconomy
+        this.manualFuelPriceWon = manualFuelPriceWon
+    }
+}

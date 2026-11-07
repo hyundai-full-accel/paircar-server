@@ -123,6 +123,48 @@ class TripApiTest(
     }
 
     @Test
+    fun `동승자는 진행 중인 운행을 조회하고, 끝나면 data가 없다`() {
+        mockMvc.get("/api/crews/$crewId/trips/current") { bearer(sua) }.andExpect {
+            status { isOk() }
+            jsonPath("$.success") { value(true) }
+            jsonPath("$.data") { doesNotExist() }
+        }
+
+        val tripId = startTrip()
+        mockMvc.get("/api/crews/$crewId/trips/current") { bearer(sua) }.andExpect {
+            jsonPath("$.data.tripId") { value(tripId) }
+        }
+
+        mockMvc.post("/api/trips/$tripId/end") {
+            bearer(jihoon)
+            json("""{"endedAt": "2026-11-09T08:30:00+09:00", "endOdometerKm": 10017.0, "tollFareWon": 0}""")
+        }
+        mockMvc.get("/api/crews/$crewId/trips/current") { bearer(sua) }.andExpect {
+            jsonPath("$.data") { doesNotExist() }
+        }
+    }
+
+    @Test
+    fun `진행 중인 운행이 있는데 또 시작하면 409와 함께 그 운행 ID를 준다`() {
+        val tripId = startTrip()
+
+        mockMvc.post("/api/trips") {
+            bearer(jihoon)
+            json(
+                """
+                {"crewId": $crewId, "carId": $carId, "originPlaceId": $home, "destinationPlaceId": $office,
+                 "startedAt": "2026-11-09T09:00:00+09:00", "startOdometerKm": 10020.0, "riders": []}
+                """,
+            )
+        }.andExpect {
+            status { isConflict() }
+            jsonPath("$.error.code") { value("TRIP_ALREADY_IN_PROGRESS") }
+            jsonPath("$.data.tripId") { value(tripId) }
+            jsonPath("$.data.crewId") { value(crewId) }
+        }
+    }
+
+    @Test
     fun `탈 지점을 바꾸고 불참 처리한다`() {
         val tripId = startTrip()
 

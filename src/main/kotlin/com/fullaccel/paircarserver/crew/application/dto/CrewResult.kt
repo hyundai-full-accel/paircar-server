@@ -9,7 +9,6 @@ data class CrewResult(
     val settlementMode: SettlementMode,
     val includeDriver: Boolean,
     val monthlyFixedWon: Int?,
-    val manualFuelPriceWon: Int?,
 ) {
     companion object {
         fun from(crew: Crew) = CrewResult(
@@ -18,7 +17,6 @@ data class CrewResult(
             settlementMode = crew.settlementMode,
             includeDriver = crew.includeDriver,
             monthlyFixedWon = crew.monthlyFixedWon,
-            manualFuelPriceWon = crew.manualFuelPriceWon,
         )
     }
 }

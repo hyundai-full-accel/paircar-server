@@ -25,14 +25,14 @@ class GlobalExceptionHandler {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @ExceptionHandler(BusinessException::class)
-    fun handleBusiness(e: BusinessException): ResponseEntity<ApiResponse<Nothing>> {
+    fun handleBusiness(e: BusinessException): ResponseEntity<ApiResponse<Any>> {
         log.debug("Business exception: {} {}", e.errorCode, e.message)
-        return respond(e.errorCode, e.message)
+        return respond(e.errorCode, e.message, data = e.data)
     }
 
     // @Valid 요청 본문 검증 실패
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleNotValid(e: MethodArgumentNotValidException): ResponseEntity<ApiResponse<Nothing>> {
+    fun handleNotValid(e: MethodArgumentNotValidException): ResponseEntity<ApiResponse<Any>> {
         val fieldErrors = e.bindingResult.fieldErrors.map {
             FieldErrorBody(field = it.field, reason = it.defaultMessage ?: "올바르지 않은 값입니다.")
         }
@@ -41,7 +41,7 @@ class GlobalExceptionHandler {
 
     // @RequestParam, @PathVariable 등에 붙인 검증 실패
     @ExceptionHandler(HandlerMethodValidationException::class)
-    fun handleMethodValidation(e: HandlerMethodValidationException): ResponseEntity<ApiResponse<Nothing>> {
+    fun handleMethodValidation(e: HandlerMethodValidationException): ResponseEntity<ApiResponse<Any>> {
         val fieldErrors = e.parameterValidationResults.flatMap { result ->
             val field = result.methodParameter.parameterName ?: "parameter"
             result.resolvableErrors.map { FieldErrorBody(field = field, reason = it.defaultMessage ?: "올바르지 않은 값입니다.") }
@@ -51,7 +51,7 @@ class GlobalExceptionHandler {
 
     // JSON 문법 오류, 타입 불일치, Kotlin non-null 필드 누락
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleNotReadable(e: HttpMessageNotReadableException): ResponseEntity<ApiResponse<Nothing>> {
+    fun handleNotReadable(e: HttpMessageNotReadableException): ResponseEntity<ApiResponse<Any>> {
         val cause = e.cause
         if (cause is MismatchedInputException && cause.path.isNotEmpty()) {
             val field = cause.path.joinToString(".") { it.fieldName ?: "[${it.index}]" }
@@ -61,34 +61,34 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingRequestHeaderException::class)
-    fun handleMissingHeader(e: MissingRequestHeaderException): ResponseEntity<ApiResponse<Nothing>> =
+    fun handleMissingHeader(e: MissingRequestHeaderException): ResponseEntity<ApiResponse<Any>> =
         respond(ErrorCode.INVALID_INPUT, fieldErrors = listOf(FieldErrorBody(e.headerName, "필수 헤더입니다.")))
 
     @ExceptionHandler(MissingServletRequestParameterException::class)
-    fun handleMissingParameter(e: MissingServletRequestParameterException): ResponseEntity<ApiResponse<Nothing>> =
+    fun handleMissingParameter(e: MissingServletRequestParameterException): ResponseEntity<ApiResponse<Any>> =
         respond(ErrorCode.INVALID_INPUT, fieldErrors = listOf(FieldErrorBody(e.parameterName, "필수 파라미터입니다.")))
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
-    fun handleTypeMismatch(e: MethodArgumentTypeMismatchException): ResponseEntity<ApiResponse<Nothing>> =
+    fun handleTypeMismatch(e: MethodArgumentTypeMismatchException): ResponseEntity<ApiResponse<Any>> =
         respond(ErrorCode.INVALID_INPUT, fieldErrors = listOf(FieldErrorBody(e.name, "형식이 올바르지 않습니다.")))
 
     @ExceptionHandler(NoResourceFoundException::class)
-    fun handleNoResource(e: NoResourceFoundException): ResponseEntity<ApiResponse<Nothing>> =
+    fun handleNoResource(e: NoResourceFoundException): ResponseEntity<ApiResponse<Any>> =
         respond(ErrorCode.RESOURCE_NOT_FOUND)
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
-    fun handleMethodNotSupported(e: HttpRequestMethodNotSupportedException): ResponseEntity<ApiResponse<Nothing>> =
+    fun handleMethodNotSupported(e: HttpRequestMethodNotSupportedException): ResponseEntity<ApiResponse<Any>> =
         respond(ErrorCode.METHOD_NOT_ALLOWED)
 
     // unique, FK 제약 위반. 서비스에서 먼저 검증하지 못한 경쟁 상황(동시 요청 등)에서 발생
     @ExceptionHandler(DataIntegrityViolationException::class)
-    fun handleDataIntegrity(e: DataIntegrityViolationException): ResponseEntity<ApiResponse<Nothing>> {
+    fun handleDataIntegrity(e: DataIntegrityViolationException): ResponseEntity<ApiResponse<Any>> {
         log.warn("Data integrity violation", e)
         return respond(ErrorCode.DATA_CONFLICT)
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleUnexpected(e: Exception): ResponseEntity<ApiResponse<Nothing>> {
+    fun handleUnexpected(e: Exception): ResponseEntity<ApiResponse<Any>> {
         log.error("Unexpected exception", e)
         return respond(ErrorCode.INTERNAL_ERROR)
     }
@@ -97,8 +97,9 @@ class GlobalExceptionHandler {
         errorCode: ErrorCode,
         message: String = errorCode.message,
         fieldErrors: List<FieldErrorBody> = emptyList(),
-    ): ResponseEntity<ApiResponse<Nothing>> =
+        data: Any? = null,
+    ): ResponseEntity<ApiResponse<Any>> =
         ResponseEntity
             .status(errorCode.status)
-            .body(ApiResponse.fail(ErrorBody(code = errorCode.name, message = message, fieldErrors = fieldErrors)))
+            .body(ApiResponse.fail(ErrorBody(code = errorCode.name, message = message, fieldErrors = fieldErrors), data))
 }

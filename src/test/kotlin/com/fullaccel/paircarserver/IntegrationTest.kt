@@ -10,6 +10,6 @@ import org.springframework.transaction.annotation.Transactional
 @Retention(AnnotationRetention.RUNTIME)
 @SpringBootTest
 @ActiveProfiles("test")
-@Import(TestcontainersConfiguration::class)
+@Import(TestcontainersConfiguration::class, TestClockConfiguration::class)
 @Transactional
 annotation class IntegrationTest

@@ -2,12 +2,17 @@ package com.fullaccel.paircarserver.car.application
 
 import com.fullaccel.paircarserver.car.application.dto.CarResult
 import com.fullaccel.paircarserver.car.application.dto.RegisterCarCommand
+import com.fullaccel.paircarserver.car.application.dto.UpdateCarCommand
 import com.fullaccel.paircarserver.car.domain.Car
 
 interface CarService {
 
     // vehicleKey로 이미 등록된 차량이면 멤버만 연결하고, 없으면 차량을 만든 뒤 연결
     fun registerCar(memberId: Long, command: RegisterCarCommand): CarResult
+
+    // 연료 종류, 입력 연비, 직접 입력 유가 수정. 그 차를 등록한 멤버만 (CAR_NOT_REGISTERED_TO_MEMBER)
+    // 이미 발행한 영수증은 발행 때 값을 그대로 둠
+    fun updateCar(memberId: Long, carId: Long, command: UpdateCarCommand): CarResult
 
     fun getCar(carId: Long): CarResult
 

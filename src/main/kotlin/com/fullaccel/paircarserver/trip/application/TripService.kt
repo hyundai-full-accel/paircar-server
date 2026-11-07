@@ -17,10 +17,14 @@ interface TripService {
 
     // 검증: 크루 소속, 차량 등록(규칙 1), 장소 소속(규칙 2, 4), 동승자 소속과 운전자 제외(규칙 3),
     // 운전자 계좌(규칙 5), 경유지 최대 2곳(규칙 7), 진행 중인 운행 없음
+    // 진행 중인 운행이 있으면 TRIP_ALREADY_IN_PROGRESS와 함께 그 운행 ID(TripInProgress)를 실어 보냄
     // 결과의 waypoints로 차량 앱이 경유지를 설정함
     fun startTrip(driverMemberId: Long, command: StartTripCommand): TripResult
 
     fun getTrip(tripId: Long): TripResult
+
+    // 크루의 진행 중인 운행. 없으면 null
+    fun getCurrentTrip(crewId: Long): TripResult?
 
     // 이미 탑승 기록이 있으면 처음 값을 유지함
     fun recordBoarding(driverMemberId: Long, tripId: Long, crewMemberId: Long, command: BoardingEventCommand): TripResult

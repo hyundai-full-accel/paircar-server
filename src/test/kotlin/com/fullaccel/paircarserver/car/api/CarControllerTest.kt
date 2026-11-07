@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.put
 
 @IntegrationTest
 @AutoConfigureMockMvc
@@ -52,6 +53,52 @@ class CarControllerTest(
         }.andExpect {
             status { isOk() }
             jsonPath("$.data.manualFuelEconomy") { value(5.4) }
+        }
+    }
+
+    @Test
+    fun `차량 주인은 유가, 연비를 바꾸고 null로 지운다`() {
+        val token = mockMvc.createMemberToken(objectMapper, "지훈")
+        val carId = mockMvc.post("/api/cars") {
+            bearer(token)
+            json("""{"vehicleKey": "VK-1", "fuelType": "GASOLINE"}""")
+        }.data(objectMapper)["carId"].asLong()
+
+        mockMvc.put("/api/cars/$carId") {
+            bearer(token)
+            json("""{"fuelType": "EV", "manualFuelEconomy": 5.80, "manualFuelPriceWon": 180}""")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.fuelType") { value("EV") }
+            jsonPath("$.data.manualFuelEconomy") { value(5.8) }
+            jsonPath("$.data.manualFuelPriceWon") { value(180) }
+        }
+
+        mockMvc.put("/api/cars/$carId") {
+            bearer(token)
+            json("""{"fuelType": "EV"}""")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.manualFuelEconomy") { doesNotExist() }
+            jsonPath("$.data.manualFuelPriceWon") { doesNotExist() }
+        }
+    }
+
+    @Test
+    fun `차를 등록하지 않은 멤버(동승자)는 차량을 바꿀 수 없다`() {
+        val owner = mockMvc.createMemberToken(objectMapper, "지훈")
+        val other = mockMvc.createMemberToken(objectMapper, "수아")
+        val carId = mockMvc.post("/api/cars") {
+            bearer(owner)
+            json("""{"vehicleKey": "VK-1", "fuelType": "GASOLINE"}""")
+        }.data(objectMapper)["carId"].asLong()
+
+        mockMvc.put("/api/cars/$carId") {
+            bearer(other)
+            json("""{"fuelType": "GASOLINE", "manualFuelPriceWon": 1}""")
+        }.andExpect {
+            status { isForbidden() }
+            jsonPath("$.error.code") { value("CAR_NOT_REGISTERED_TO_MEMBER") }
         }
     }
 

@@ -6,8 +6,11 @@ import java.time.LocalDate
 
 interface TripRepository : JpaRepository<Trip, Long> {
 
-    // 멤버가 어느 크루에서든 아직 끝나지 않은 운행을 운전 중인지
-    fun existsByDriverMemberIdAndEndedAtIsNull(memberId: Long): Boolean
+    // 멤버가 어느 크루에서든 운전 중인, 아직 끝나지 않은 운행
+    fun findFirstByDriverMemberIdAndEndedAtIsNull(memberId: Long): Trip?
+
+    // 크루의 진행 중인 운행. 운전자가 여럿이면 가장 최근에 시작한 것
+    fun findFirstByDriverCrewIdAndEndedAtIsNullOrderByStartedAtDesc(crewId: Long): Trip?
 
     // 정산 대상: 크루의 끝난 운행 중 운행일이 until 이전인 것
     @EntityGraph(attributePaths = ["car"])

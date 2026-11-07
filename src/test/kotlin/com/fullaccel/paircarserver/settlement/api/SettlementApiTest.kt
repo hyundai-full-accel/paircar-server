@@ -44,14 +44,14 @@ class SettlementApiTest(
             bearer(jihoon)
             json("""{"vehicleKey": "VK-1", "fuelType": "GASOLINE"}""")
         }.data(objectMapper)["carId"].asLong()
+        mockMvc.put("/api/cars/$carId") {
+            bearer(jihoon)
+            json("""{"fuelType": "GASOLINE", "manualFuelPriceWon": 1684}""")
+        }
         crewId = mockMvc.post("/api/crews") {
             bearer(jihoon)
             json("""{"name": "판교 출근 크루"}""")
         }.data(objectMapper)["crewId"].asLong()
-        mockMvc.put("/api/crews/$crewId/fuel-price") {
-            bearer(jihoon)
-            json("""{"priceWon": 1684}""")
-        }
         driverId = mockMvc.get("/api/crews/$crewId/members") { bearer(jihoon) }.data(objectMapper)[0]["crewMemberId"].asLong()
         home = place("지훈 집")
         gate = place("○○아파트 정문")

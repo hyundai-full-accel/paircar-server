@@ -9,6 +9,7 @@ data class CarResult(
     val vehicleKey: String,
     val fuelType: FuelType,
     val manualFuelEconomy: BigDecimal?,
+    val manualFuelPriceWon: Int?,
 ) {
     companion object {
         fun from(car: Car) = CarResult(
@@ -16,6 +17,7 @@ data class CarResult(
             vehicleKey = car.vehicleKey,
             fuelType = car.fuelType,
             manualFuelEconomy = car.manualFuelEconomy,
+            manualFuelPriceWon = car.manualFuelPriceWon,
         )
     }
 }

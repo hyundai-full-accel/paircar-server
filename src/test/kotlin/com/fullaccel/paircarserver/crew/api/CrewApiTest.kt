@@ -90,17 +90,6 @@ class CrewApiTest(
     }
 
     @Test
-    fun `직접 입력 유가를 바꾼다`() {
-        mockMvc.put("/api/crews/$crewId/fuel-price") {
-            bearer(jihoon)
-            json("""{"priceWon": 1684}""")
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.data.manualFuelPriceWon") { value(1684) }
-        }
-    }
-
-    @Test
     fun `초대 링크로 처음 온 동승자가 참여하면 토큰으로 크루를 조회할 수 있다`() {
         val code = invite()
         mockMvc.get("/api/invites/$code").andExpect {

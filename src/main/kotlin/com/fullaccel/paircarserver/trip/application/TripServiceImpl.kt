@@ -16,6 +16,7 @@ import com.fullaccel.paircarserver.trip.application.dto.SettlementBoarding
 import com.fullaccel.paircarserver.trip.application.dto.SettlementSegment
 import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
+import com.fullaccel.paircarserver.trip.application.dto.TripInProgress
 import com.fullaccel.paircarserver.trip.application.dto.TripResult
 import com.fullaccel.paircarserver.trip.application.event.BoardPlaceChangedEvent
 import com.fullaccel.paircarserver.trip.application.event.BoardingCanceledEvent
@@ -53,8 +54,9 @@ class TripServiceImpl(
 
     @Transactional
     override fun startTrip(driverMemberId: Long, command: StartTripCommand): TripResult {
-        if (tripRepository.existsByDriverMemberIdAndEndedAtIsNull(driverMemberId)) {
-            throw BusinessException(ErrorCode.TRIP_ALREADY_IN_PROGRESS)
+        tripRepository.findFirstByDriverMemberIdAndEndedAtIsNull(driverMemberId)?.let {
+            // 차량 앱이 앱 재설치, 기기 저장 유실 뒤에도 그 운행을 이어서 끝낼 수 있게 ID를 알려 줌
+            throw BusinessException(ErrorCode.TRIP_ALREADY_IN_PROGRESS, data = TripInProgress(it.id, it.driver.crew.id))
         }
         val crewId = command.crewId
         val driver = crewService.getCrewMemberEntity(crewId, driverMemberId)
@@ -109,6 +111,9 @@ class TripServiceImpl(
     }
 
     override fun getTrip(tripId: Long): TripResult = toResult(getTripEntity(tripId))
+
+    override fun getCurrentTrip(crewId: Long): TripResult? =
+        tripRepository.findFirstByDriverCrewIdAndEndedAtIsNullOrderByStartedAtDesc(crewId)?.let { toResult(it) }
 
     @Transactional
     override fun recordBoarding(
@@ -269,6 +274,7 @@ class TripServiceImpl(
                     tripId = trip.id,
                     driverCrewMemberId = trip.driver.id,
                     fuelType = trip.car.fuelType,
+                    manualFuelPriceWon = trip.car.manualFuelPriceWon,
                     serviceDate = trip.serviceDate,
                     originPlaceId = trip.originPlace.id,
                     destinationPlaceId = trip.destinationPlace.id,

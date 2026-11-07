@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Clock
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -44,10 +45,15 @@ class SettlementServiceImpl(
     private val crewDetourService: CrewDetourService,
     private val memberService: MemberService,
     private val eventPublisher: ApplicationEventPublisher,
+    private val clock: Clock,
 ) : SettlementService {
 
     @Transactional
     override fun issueReceipts(crewId: Long, month: YearMonth): List<ReceiptResult> {
+        // 진행 중인 달을 발행하면 그 뒤 운행이 다음 달로 밀려서 막음 (KST 기준)
+        if (!month.isBefore(YearMonth.now(clock))) {
+            throw BusinessException(ErrorCode.SETTLEMENT_MONTH_NOT_CLOSED)
+        }
         val crew = crewService.getCrewEntity(crewId)
         if (crew.settlementMode == SettlementMode.FIXED_MONTHLY) {
             throw BusinessException(ErrorCode.SETTLEMENT_MODE_NOT_SUPPORTED)
@@ -59,9 +65,10 @@ class SettlementServiceImpl(
             .map { it.boarding.id }
             .toSet()
 
-        val fuelPrices = mutableMapOf<FuelType, Int>()
+        val publicFuelPrices = mutableMapOf<FuelType, Int>()
         val rides = trips.flatMap { trip ->
-            val fuelPriceWon = fuelPrices.getOrPut(trip.fuelType) { findFuelPriceWon(crew, trip.fuelType, monthStart) }
+            val fuelPriceWon = trip.manualFuelPriceWon
+                ?: publicFuelPrices.getOrPut(trip.fuelType) { findPublicFuelPriceWon(trip.fuelType, monthStart) }
             trip.boardings
                 .filter { it.boardingId !in settledBoardingIds }
                 .map { boarding -> calculateRide(crew, trip, boarding, fuelPriceWon) }
@@ -144,9 +151,8 @@ class SettlementServiceImpl(
         return distance.divide(fuel, 10, RoundingMode.HALF_UP)
     }
 
-    // 크루가 직접 넣은 유가가 우선. 없으면 연료별 월평균 유가 (하이브리드는 휘발유 기준)
-    private fun findFuelPriceWon(crew: Crew, fuelType: FuelType, month: LocalDate): Int {
-        crew.manualFuelPriceWon?.let { return it }
+    // 차량에 직접 넣은 유가가 없을 때 쓰는 연료별 월평균 유가 (하이브리드는 휘발유 기준)
+    private fun findPublicFuelPriceWon(fuelType: FuelType, month: LocalDate): Int {
         val priceFuelType = if (fuelType == FuelType.HYBRID) FuelType.GASOLINE else fuelType
         return fuelPriceRepository.findByFuelTypeAndMonth(priceFuelType, month)?.priceWon
             ?: throw BusinessException(ErrorCode.FUEL_PRICE_NOT_FOUND)

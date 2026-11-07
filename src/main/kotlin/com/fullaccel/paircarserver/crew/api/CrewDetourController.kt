@@ -27,7 +27,8 @@ class CrewDetourController(
 
     @Operation(
         summary = "우회 거리 등록",
-        description = "차량 앱이 경유 경로와 직행 경로를 비교해 계산한 값을 올립니다. 같은 동승자, 운전자, 장소가 있으면 값을 바꾸고, 값이 달라지면 양측 확인을 초기화합니다.",
+        description = "차량 앱이 경유 경로와 직행 경로를 비교해 계산한 값을 올립니다. 같은 동승자, 운전자, 장소가 있으면 값을 바꾸고, 값이 달라지면 양측 확인을 초기화합니다. " +
+            "placeId는 운행 시작 때 그 동승자의 boardPlaceId(또는 alightPlaceId)와 같은 장소여야 정산에 들어갑니다. 출발지, 목적지에 등록한 값은 쓰지 않습니다.",
     )
     @PutMapping
     fun registerDetour(

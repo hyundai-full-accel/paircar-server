@@ -58,6 +58,7 @@ enum class ErrorCode(
     // 정산
     RECEIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "영수증을 찾을 수 없습니다."),
     RECEIPT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "영수증의 동승자나 운전자만 조회할 수 있습니다."),
-    FUEL_PRICE_NOT_FOUND(HttpStatus.CONFLICT, "정산 월의 유가 정보가 없습니다. 크루 유가를 직접 입력해 주세요."),
+    FUEL_PRICE_NOT_FOUND(HttpStatus.CONFLICT, "정산 월의 유가 정보가 없습니다. 차량 유가를 직접 입력해 주세요."),
     SETTLEMENT_MODE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "아직 지원하지 않는 정산 방식입니다."),
+    SETTLEMENT_MONTH_NOT_CLOSED(HttpStatus.BAD_REQUEST, "아직 끝나지 않은 달은 정산할 수 없습니다."),
 }

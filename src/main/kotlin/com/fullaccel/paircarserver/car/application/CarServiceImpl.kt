@@ -2,6 +2,7 @@ package com.fullaccel.paircarserver.car.application
 
 import com.fullaccel.paircarserver.car.application.dto.CarResult
 import com.fullaccel.paircarserver.car.application.dto.RegisterCarCommand
+import com.fullaccel.paircarserver.car.application.dto.UpdateCarCommand
 import com.fullaccel.paircarserver.car.domain.Car
 import com.fullaccel.paircarserver.car.domain.CarRepository
 import com.fullaccel.paircarserver.car.domain.MemberCar
@@ -35,6 +36,14 @@ class CarServiceImpl(
         if (!memberCarRepository.existsByMemberIdAndCarId(memberId, car.id)) {
             memberCarRepository.save(MemberCar(member = member, car = car))
         }
+        return CarResult.from(car)
+    }
+
+    @Transactional
+    override fun updateCar(memberId: Long, carId: Long, command: UpdateCarCommand): CarResult {
+        val car = getCarEntity(carId)
+        validateMemberCar(memberId, carId)
+        car.update(command.fuelType, command.manualFuelEconomy, command.manualFuelPriceWon)
         return CarResult.from(car)
     }
 

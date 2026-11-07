@@ -91,6 +91,7 @@ Table crews {
   include_driver boolean [not null, default: true]            // 구간 탑승 인원에 운전자를 포함할지
   monthly_fixed_won int                                       // 월 정액 금액 (settlement_mode가 FIXED_MONTHLY일 때만)
   departure_time time                                         // 평소 출발 시각 (KST). 아래 일정은 기본값이고 운행은 그날 정한 대로 시작
+  arrival_time time                                           // 평소 도착 시각 (KST)
   departure_days int [not null, default: 0]                   // 카풀하는 요일 비트 (월=1, 화=2, 수=4, ... 일=64)
   origin_place_id bigint [ref: > crew_places.id]              // 기본 출발지
   destination_place_id bigint [ref: > crew_places.id]         // 기본 목적지
@@ -132,6 +133,7 @@ Table crew_members {
   joined_at timestamptz [not null]                // 참여 시각
   board_place_id bigint [ref: > crew_places.id]   // 동승자로 탈 때 평소 탈 곳
   alight_place_id bigint [ref: > crew_places.id]  // 동승자로 탈 때 평소 내릴 곳
+  pickup_time time                                // 평소 픽업 시각 (KST)
 
   indexes {
     (crew_id, member_id) [unique]  // 같은 크루에 중복 참여 방지
@@ -174,6 +176,7 @@ Table crew_attendances {
   service_date date [not null]                            // 운행일 (KST)
   attending boolean [not null]                            // 그날 타는지
   board_place_id bigint [ref: > crew_places.id]           // 그날만 다른 탈 곳 (비어 있으면 평소 탈 곳)
+  delay_minutes int                                       // 출발 전에 알린 그날 지각 (분, 1~120). 안 타는 날이면 비움
   updated_at timestamptz [not null]                       // 마지막 변경 시각
 
   indexes {

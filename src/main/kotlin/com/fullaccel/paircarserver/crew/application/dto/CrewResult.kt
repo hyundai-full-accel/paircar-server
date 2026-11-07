@@ -16,6 +16,9 @@ data class CrewResult(
     @field:Schema(description = "평소 출발 시각 (KST, HH:mm)", type = "string", example = "08:00")
     @field:JsonFormat(pattern = "HH:mm")
     val departureTime: LocalTime?,
+    @field:Schema(description = "평소 도착 시각 (KST, HH:mm)", type = "string", example = "08:32")
+    @field:JsonFormat(pattern = "HH:mm")
+    val arrivalTime: LocalTime?,
     @field:Schema(description = "카풀하는 요일")
     val departureDays: List<DayOfWeek>,
     @field:Schema(description = "기본 출발지")
@@ -31,6 +34,7 @@ data class CrewResult(
             includeDriver = crew.includeDriver,
             monthlyFixedWon = crew.monthlyFixedWon,
             departureTime = crew.departureTime,
+            arrivalTime = crew.arrivalTime,
             departureDays = crew.departureDays.sorted(),
             originPlace = crew.originPlace?.let(CrewPlaceResult::from),
             destinationPlace = crew.destinationPlace?.let(CrewPlaceResult::from),

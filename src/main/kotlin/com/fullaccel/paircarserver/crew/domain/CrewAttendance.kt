@@ -29,6 +29,8 @@ class CrewAttendance(
     attending: Boolean,
 
     boardPlace: CrewPlace?,
+
+    delayMinutes: Int?,
 ) : BaseEntity() {
 
     @Column(nullable = false)
@@ -41,15 +43,21 @@ class CrewAttendance(
     var boardPlace: CrewPlace? = boardPlace
         protected set
 
+    // 출발 전에 알린 그날 지각 (분). 안 타는 날이면 비움
+    @Column
+    var delayMinutes: Int? = delayMinutes
+        protected set
+
     @Column(nullable = false)
     var updatedAt: Instant = Instant.now()
         protected set
 
     // 바뀌었으면 true
-    fun change(attending: Boolean, boardPlace: CrewPlace?): Boolean {
-        if (this.attending == attending && this.boardPlace?.id == boardPlace?.id) return false
+    fun change(attending: Boolean, boardPlace: CrewPlace?, delayMinutes: Int?): Boolean {
+        if (this.attending == attending && this.boardPlace?.id == boardPlace?.id && this.delayMinutes == delayMinutes) return false
         this.attending = attending
         this.boardPlace = boardPlace
+        this.delayMinutes = delayMinutes
         this.updatedAt = Instant.now()
         return true
     }

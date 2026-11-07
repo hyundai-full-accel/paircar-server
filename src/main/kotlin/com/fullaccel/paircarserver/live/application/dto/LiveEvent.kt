@@ -87,6 +87,7 @@ data class AttendanceData(
     val serviceDate: LocalDate,
     val attending: Boolean,
     val boardPlace: PlaceData?, // 그날 탈 곳 (그날만 바꾼 곳, 없으면 기본 탈 곳)
+    val delayMinutes: Int?, // 출발 전에 알린 그날 지각 (분)
 ) : LiveEventData
 
 data class PlaceData(

@@ -37,6 +37,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -133,6 +134,11 @@ class TripServiceImpl(
     ): TripResult {
         val trip = getTripOfDriver(driverMemberId, tripId)
         val boarding = getBoarding(tripId, crewMemberId)
+        if (boarding.isBoarded && boarding.boardOdometerKm == null) {
+            // 동승자가 "탔어요"로 먼저 알린 탑승: 주행거리만 채움
+            if (command.odometerKm < trip.startOdometerKm) throw BusinessException(ErrorCode.INVALID_ODOMETER)
+            boarding.fillBoardOdometer(command.odometerKm)
+        }
         if (!boarding.isBoarded) {
             if (command.odometerKm < trip.startOdometerKm) throw BusinessException(ErrorCode.INVALID_ODOMETER)
             boarding.board(command.occurredAt, command.odometerKm)
@@ -143,6 +149,28 @@ class TripServiceImpl(
                     riderMemberId = boarding.crewMember.member.id,
                     riderCrewMemberId = crewMemberId,
                     riderNickname = boarding.crewMember.member.nickname,
+                ),
+            )
+        }
+        return toResult(trip)
+    }
+
+    @Transactional
+    override fun reportBoardedByRider(riderMemberId: Long, tripId: Long): TripResult {
+        val trip = getTripEntity(tripId)
+        if (trip.isEnded) throw BusinessException(ErrorCode.TRIP_ALREADY_ENDED)
+        val boarding = boardingRepository.findAllByTripIdOrderById(tripId).firstOrNull { it.crewMember.member.id == riderMemberId }
+            ?: throw BusinessException(ErrorCode.TRIP_ACCESS_DENIED)
+        if (!boarding.isBoarded) {
+            boarding.reportBoardedByRider(Instant.now())
+            eventPublisher.publishEvent(
+                RiderBoardedEvent(
+                    tripId = tripId,
+                    driverMemberId = trip.driver.member.id,
+                    riderMemberId = riderMemberId,
+                    riderCrewMemberId = boarding.crewMember.id,
+                    riderNickname = boarding.crewMember.member.nickname,
+                    byRider = true,
                 ),
             )
         }

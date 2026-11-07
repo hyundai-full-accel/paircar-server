@@ -10,6 +10,7 @@ import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalTime
 
 @Service
 @Transactional(readOnly = true)
@@ -29,6 +30,7 @@ class CrewSettingServiceImpl(
         crew.update(
             name = command.name,
             departureTime = command.departureTime,
+            arrivalTime = command.arrivalTime,
             departureDays = command.departureDays,
             originPlace = command.originPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
             destinationPlace = command.destinationPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
@@ -45,12 +47,14 @@ class CrewSettingServiceImpl(
         crewMemberId: Long,
         boardPlaceId: Long?,
         alightPlaceId: Long?,
+        pickupTime: LocalTime?,
     ): CrewMemberResult {
         val crewMember = getCrewMemberOf(crewId, crewMemberId)
         authorizeSelfOrDriver(requesterMemberId, crewMember)
         crewMember.changePlaces(
             boardPlace = boardPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
             alightPlace = alightPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
+            pickupTime = pickupTime,
         )
         return CrewMemberResult.from(crewMember, carService.hasCar(crewMember.member.id))
     }

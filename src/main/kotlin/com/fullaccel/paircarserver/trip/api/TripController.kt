@@ -60,7 +60,23 @@ class TripController(
         return ApiResponse.ok(trip)
     }
 
-    @Operation(summary = "탑승 기록", description = "탑승 감지(도어 → 벨트) 시 호출합니다. 이미 기록됐으면 처음 값을 유지합니다.")
+    @Operation(
+        summary = "탔어요 (동승자)",
+        description = "동승자 웹에서 동승자 본인이 탔다고 알립니다. 아직 탑승 기록이 없으면 지금 시각으로 탑승 처리하고 " +
+            "운전자에게 rider.boarded를 보냅니다(주행거리는 비워 둠). 차량 앱이 나중에 탑승을 기록하면 주행거리만 채웁니다.",
+    )
+    @PostMapping("/{tripId}/me/boarded")
+    fun reportBoardedByRider(
+        @LoginMember memberId: Long,
+        @PathVariable tripId: Long,
+    ): ApiResponse<TripResult> =
+        ApiResponse.ok(tripService.reportBoardedByRider(memberId, tripId))
+
+    @Operation(
+        summary = "탑승 기록",
+        description = "탑승 감지(도어 → 벨트) 시 호출합니다. 이미 기록됐으면 처음 값을 유지합니다. " +
+            "동승자가 \"탔어요\"로 먼저 알린 탑승이면 주행거리만 채웁니다.",
+    )
     @PostMapping("/{tripId}/boardings/{crewMemberId}/board")
     fun recordBoarding(
         @LoginMember memberId: Long,

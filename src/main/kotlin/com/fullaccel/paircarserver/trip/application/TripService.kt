@@ -31,7 +31,11 @@ interface TripService {
     // 크루의 그 달(운행일 KST) 운행 목록. 시작 순
     fun getTripsOfMonth(crewId: Long, month: YearMonth): List<TripSummaryResult>
 
-    // 이미 탑승 기록이 있으면 처음 값을 유지함
+    // 동승자의 "탔어요". 아직 탑승 기록이 없으면 지금 시각으로 탑승 처리하고 운전자에게 알림 (주행거리는 비워 둠)
+    // 이미 탔으면 그대로. 그 운행의 동승자가 아니면 TRIP_ACCESS_DENIED, 끝난 운행이면 TRIP_ALREADY_ENDED
+    fun reportBoardedByRider(riderMemberId: Long, tripId: Long): TripResult
+
+    // 이미 탑승 기록이 있으면 처음 값을 유지함. 단 동승자가 먼저 알린 탑승이면 주행거리만 채움
     fun recordBoarding(driverMemberId: Long, tripId: Long, crewMemberId: Long, command: BoardingEventCommand): TripResult
 
     // 탑승 전이면 BOARDING_NOT_BOARDED. 이미 하차 기록이 있으면 처음 값을 유지함

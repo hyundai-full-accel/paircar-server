@@ -34,7 +34,7 @@ class CrewMemberController(
     private val crewAttendanceService: CrewAttendanceService,
 ) {
 
-    @Operation(summary = "평소 탈 곳, 내릴 곳", description = "null은 지웁니다. 장소는 이 크루 것이어야 합니다.")
+    @Operation(summary = "평소 탈 곳, 내릴 곳, 픽업 시각", description = "바꿀 수 있는 값 전체를 보내고 null은 지웁니다. 장소는 이 크루 것이어야 합니다.")
     @PutMapping("/members/{crewMemberId}/places")
     fun changeMemberPlaces(
         @LoginMember memberId: Long,
@@ -44,7 +44,14 @@ class CrewMemberController(
     ): ApiResponse<CrewMemberResult> {
         crewService.validateCrewAccess(crewId, memberId)
         return ApiResponse.ok(
-            crewSettingService.changeMemberPlaces(memberId, crewId, crewMemberId, request.boardPlaceId, request.alightPlaceId),
+            crewSettingService.changeMemberPlaces(
+                memberId,
+                crewId,
+                crewMemberId,
+                request.boardPlaceId,
+                request.alightPlaceId,
+                request.pickupTime,
+            ),
         )
     }
 

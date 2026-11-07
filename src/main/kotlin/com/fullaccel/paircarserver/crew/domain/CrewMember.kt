@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import java.time.Instant
+import java.time.LocalTime
 
 // 멤버가 크루에 참여함
 @Entity
@@ -41,8 +42,14 @@ class CrewMember(
     var alightPlace: CrewPlace? = null
         protected set
 
-    fun changePlaces(boardPlace: CrewPlace?, alightPlace: CrewPlace?) {
+    // 평소 픽업 시각 (KST). 운전자가 이 사람을 태우는 시각
+    @Column
+    var pickupTime: LocalTime? = null
+        protected set
+
+    fun changePlaces(boardPlace: CrewPlace?, alightPlace: CrewPlace?, pickupTime: LocalTime?) {
         this.boardPlace = boardPlace
         this.alightPlace = alightPlace
+        this.pickupTime = pickupTime
     }
 }

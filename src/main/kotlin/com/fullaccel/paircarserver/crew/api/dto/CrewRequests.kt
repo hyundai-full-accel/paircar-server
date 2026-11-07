@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.DecimalMax
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Digits
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import java.math.BigDecimal
@@ -80,6 +82,10 @@ data class UpdateCrewRequest(
     @field:JsonFormat(pattern = "HH:mm")
     val departureTime: LocalTime? = null,
 
+    @field:Schema(description = "평소 도착 시각 (KST, HH:mm)", type = "string", example = "08:32", nullable = true)
+    @field:JsonFormat(pattern = "HH:mm")
+    val arrivalTime: LocalTime? = null,
+
     @field:Schema(description = "카풀하는 요일", example = "[\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"]")
     val departureDays: Set<DayOfWeek> = emptySet(),
 
@@ -95,7 +101,8 @@ data class UpdateCrewRequest(
     @field:Schema(description = "구간 탑승 인원에 운전자를 포함할지", example = "true")
     val includeDriver: Boolean,
 ) {
-    fun toCommand() = UpdateCrewCommand(name, departureTime, departureDays, originPlaceId, destinationPlaceId, settlementMode, includeDriver)
+    fun toCommand() =
+        UpdateCrewCommand(name, departureTime, arrivalTime, departureDays, originPlaceId, destinationPlaceId, settlementMode, includeDriver)
 }
 
 data class ChangeMemberPlacesRequest(
@@ -104,6 +111,10 @@ data class ChangeMemberPlacesRequest(
 
     @field:Schema(description = "평소 내릴 곳 장소 ID. null이면 지움", example = "4", nullable = true)
     val alightPlaceId: Long? = null,
+
+    @field:Schema(description = "평소 픽업 시각 (KST, HH:mm). null이면 지움", type = "string", example = "07:32", nullable = true)
+    @field:JsonFormat(pattern = "HH:mm")
+    val pickupTime: LocalTime? = null,
 )
 
 data class AttendanceRequest(
@@ -112,6 +123,11 @@ data class AttendanceRequest(
 
     @field:Schema(description = "그날만 다른 탈 곳 장소 ID. null이면 기본 탈 곳", example = "3", nullable = true)
     val boardPlaceId: Long? = null,
+
+    @field:Schema(description = "출발 전에 알리는 그날 지각 (분, 1~120). 안 타는 날이면 무시", example = "10", nullable = true)
+    @field:Min(1)
+    @field:Max(120)
+    val delayMinutes: Int? = null,
 ) {
-    fun toCommand() = AttendanceCommand(attending, boardPlaceId)
+    fun toCommand() = AttendanceCommand(attending, boardPlaceId, delayMinutes.takeIf { attending })
 }

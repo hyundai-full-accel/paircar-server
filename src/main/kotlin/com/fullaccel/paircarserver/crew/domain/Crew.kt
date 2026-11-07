@@ -45,6 +45,11 @@ class Crew(
     var departureTime: LocalTime? = null
         protected set
 
+    // 평소 도착 시각 (KST). 운전자가 정함
+    @Column
+    var arrivalTime: LocalTime? = null
+        protected set
+
     // 카풀하는 요일
     @Convert(converter = DaysOfWeekConverter::class)
     @Column(nullable = false)
@@ -64,6 +69,7 @@ class Crew(
     fun update(
         name: String,
         departureTime: LocalTime?,
+        arrivalTime: LocalTime?,
         departureDays: Set<DayOfWeek>,
         originPlace: CrewPlace?,
         destinationPlace: CrewPlace?,
@@ -72,6 +78,7 @@ class Crew(
     ) {
         this.name = name
         this.departureTime = departureTime
+        this.arrivalTime = arrivalTime
         this.departureDays = departureDays
         this.originPlace = originPlace
         this.destinationPlace = destinationPlace

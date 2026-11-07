@@ -69,6 +69,16 @@ class Boarding(
         this.boardOdometerKm = odometerKm
     }
 
+    // 동승자가 "탔어요"를 눌러 먼저 알림. 주행거리는 차량 앱이 탑승을 기록할 때 채움
+    fun reportBoardedByRider(boardedAt: Instant) {
+        this.boardedAt = boardedAt
+    }
+
+    // 동승자가 먼저 알린 탑승에 차량 앱의 주행거리를 채움 (탑승 시각은 처음 값 유지)
+    fun fillBoardOdometer(odometerKm: BigDecimal) {
+        this.boardOdometerKm = odometerKm
+    }
+
     fun alight(alightedAt: Instant, odometerKm: BigDecimal) {
         this.alightedAt = alightedAt
         this.alightOdometerKm = odometerKm

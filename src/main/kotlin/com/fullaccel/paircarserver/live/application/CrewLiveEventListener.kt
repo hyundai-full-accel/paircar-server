@@ -39,6 +39,7 @@ class CrewLiveEventListener(
             serviceDate = event.serviceDate,
             attending = event.attending,
             boardPlace = event.boardPlace?.let { PlaceData(it.placeId, it.name, it.latitude, it.longitude) },
+            delayMinutes = event.delayMinutes,
         )
         liveNotifier.notify(event.recipientMemberIds, LiveEvent(LiveEventType.RIDER_ATTENDANCE_CHANGED, data = data))
     }

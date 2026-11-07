@@ -210,4 +210,59 @@ class CrewScheduleApiTest(
             jsonPath("$.error.code") { value("ATTENDANCE_DATE_PASSED") }
         }
     }
+
+    @Test
+    fun `도착 시각, 평소 픽업 시각을 정하면 크루와 크루원 조회에 나온다`() {
+        mockMvc.put("/api/crews/$crewId") {
+            bearer(jihoon)
+            json(
+                """{"name": "판교 출근 크루", "departureTime": "07:10", "arrivalTime": "08:32", "departureDays": ["MONDAY"],
+                    "settlementMode": "FAIR", "includeDriver": true}""",
+            )
+        }
+        mockMvc.put("/api/crews/$crewId/members/$suaId/places") {
+            bearer(sua)
+            json("""{"boardPlaceId": $gate, "alightPlaceId": $office, "pickupTime": "07:32"}""")
+        }
+
+        mockMvc.get("/api/crews/$crewId") { bearer(sua) }.andExpect {
+            jsonPath("$.data.arrivalTime") { value("08:32") }
+        }
+        mockMvc.get("/api/crews/$crewId/members") { bearer(sua) }.andExpect {
+            jsonPath("$.data[1].pickupTime") { value("07:32") }
+        }
+    }
+
+    @Test
+    fun `출발 전에 그날 지각을 알리면 출석에 남고 다른 크루 멤버에게 알린다`() {
+        mockMvc.put("/api/crews/$crewId/members/$suaId/attendance/2027-01-18") {
+            bearer(sua)
+            json("""{"attending": true, "delayMinutes": 10}""")
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.delayMinutes") { value(10) }
+        }
+
+        val event = events.stream(AttendanceChangedEvent::class.java).toList().single()
+        assertEquals(10, event.delayMinutes)
+
+        // 안 타는 날로 바꾸면 지각은 지움
+        mockMvc.put("/api/crews/$crewId/members/$suaId/attendance/2027-01-18") {
+            bearer(sua)
+            json("""{"attending": false, "delayMinutes": 10}""")
+        }.andExpect {
+            jsonPath("$.data.delayMinutes") { doesNotExist() }
+        }
+    }
+
+    @Test
+    fun `지각은 1분에서 120분까지`() {
+        mockMvc.put("/api/crews/$crewId/members/$suaId/attendance/2027-01-18") {
+            bearer(sua)
+            json("""{"attending": true, "delayMinutes": 0}""")
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.error.code") { value("INVALID_INPUT") }
+        }
+    }
 }

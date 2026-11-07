@@ -23,7 +23,7 @@ class CrewLiveEventListenerTest {
         listener.on(
             AttendanceChangedEvent(
                 crewId = 1, crewMemberId = 2, nickname = "수아", serviceDate = LocalDate.of(2026, 11, 9),
-                attending = true, boardPlace = place, recipientMemberIds = listOf(10, 30),
+                attending = true, boardPlace = place, delayMinutes = 10, recipientMemberIds = listOf(10, 30),
             ),
         )
 
@@ -32,7 +32,7 @@ class CrewLiveEventListenerTest {
         assertEquals(LiveEventType.RIDER_ATTENDANCE_CHANGED, event.type)
         assertNull(event.tripId) // 출발 전이라 운행이 없음
         assertEquals(
-            AttendanceData(1, 2, "수아", LocalDate.of(2026, 11, 9), true, PlaceData(5, "후문", BigDecimal("37.4"), BigDecimal("127.1"))),
+            AttendanceData(1, 2, "수아", LocalDate.of(2026, 11, 9), true, PlaceData(5, "후문", BigDecimal("37.4"), BigDecimal("127.1")), 10),
             event.data,
         )
     }

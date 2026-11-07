@@ -14,6 +14,8 @@ data class AttendanceResult(
     val boardPlace: CrewPlaceResult?,
     @field:Schema(description = "그날 내릴 곳 (기본 내릴 곳)")
     val alightPlace: CrewPlaceResult?,
+    @field:Schema(description = "출발 전에 알린 그날 지각 (분)", example = "10")
+    val delayMinutes: Int?,
     @field:Schema(description = "그날 출석을 따로 정했는지. false면 기본값")
     val changed: Boolean,
 )

@@ -49,6 +49,9 @@ data class InvitePreviewResult(
     @field:Schema(description = "평소 출발 시각 (KST, HH:mm)", type = "string", example = "07:10")
     @field:JsonFormat(pattern = "HH:mm")
     val departureTime: LocalTime?,
+    @field:Schema(description = "평소 도착 시각 (KST, HH:mm)", type = "string", example = "08:32")
+    @field:JsonFormat(pattern = "HH:mm")
+    val arrivalTime: LocalTime?,
     val departureDays: List<DayOfWeek>,
     val originPlace: CrewPlaceResult?,
     val destinationPlace: CrewPlaceResult?,
@@ -68,6 +71,7 @@ data class InvitePreviewResult(
             settlementMode = crew.settlementMode,
             includeDriver = crew.includeDriver,
             departureTime = crew.departureTime,
+            arrivalTime = crew.arrivalTime,
             departureDays = crew.departureDays,
             originPlace = crew.originPlace,
             destinationPlace = crew.destinationPlace,

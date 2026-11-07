@@ -55,14 +55,15 @@ class CrewAttendanceServiceImpl(
         val boardPlace = command.boardPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) }
 
         val existing = crewAttendanceRepository.findByCrewMemberIdAndServiceDate(crewMemberId, serviceDate)
-        val changed = existing?.change(command.attending, boardPlace) ?: true
+        val delayMinutes = command.delayMinutes.takeIf { command.attending }
+        val changed = existing?.change(command.attending, boardPlace, delayMinutes) ?: true
         val attendance = existing
-            ?: crewAttendanceRepository.save(CrewAttendance(crewMember, serviceDate, command.attending, boardPlace))
-        if (changed) publishChanged(crewMember, serviceDate, command.attending, boardPlace ?: crewMember.boardPlace)
+            ?: crewAttendanceRepository.save(CrewAttendance(crewMember, serviceDate, command.attending, boardPlace, delayMinutes))
+        if (changed) publishChanged(crewMember, serviceDate, command.attending, boardPlace ?: crewMember.boardPlace, delayMinutes)
         return toResult(crewMember, serviceDate, attendance)
     }
 
-    private fun publishChanged(crewMember: CrewMember, serviceDate: LocalDate, attending: Boolean, boardPlace: CrewPlace?) {
+    private fun publishChanged(crewMember: CrewMember, serviceDate: LocalDate, attending: Boolean, boardPlace: CrewPlace?, delayMinutes: Int?) {
         val recipients = crewMemberRepository.findAllByCrewIdOrderById(crewMember.crew.id)
             .map { it.member.id }
             .filter { it != crewMember.member.id }
@@ -74,6 +75,7 @@ class CrewAttendanceServiceImpl(
                 serviceDate = serviceDate,
                 attending = attending,
                 boardPlace = boardPlace?.let { AttendancePlace(it.id, it.name, it.latitude, it.longitude) },
+                delayMinutes = delayMinutes,
                 recipientMemberIds = recipients,
             ),
         )
@@ -87,6 +89,7 @@ class CrewAttendanceServiceImpl(
         attending = attendance?.attending ?: true,
         boardPlace = (attendance?.boardPlace ?: crewMember.boardPlace)?.let(CrewPlaceResult::from),
         alightPlace = crewMember.alightPlace?.let(CrewPlaceResult::from),
+        delayMinutes = attendance?.delayMinutes,
         changed = attendance != null,
     )
 }

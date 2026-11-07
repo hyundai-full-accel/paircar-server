@@ -27,8 +27,10 @@ class TripLiveEventListener(
 
     @TransactionalEventListener
     fun on(event: RiderBoardedEvent) {
+        // 동승자가 직접 "탔어요"를 누르면 운전자 차량 앱에도 알림 (TTS)
+        val recipients = if (event.byRider) listOf(event.riderMemberId, event.driverMemberId) else listOf(event.riderMemberId)
         liveNotifier.notify(
-            listOf(event.riderMemberId),
+            recipients,
             LiveEvent(LiveEventType.RIDER_BOARDED, event.tripId, RiderData(event.riderCrewMemberId, event.riderNickname)),
         )
     }

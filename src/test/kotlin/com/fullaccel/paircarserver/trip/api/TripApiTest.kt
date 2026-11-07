@@ -194,6 +194,36 @@ class TripApiTest(
     }
 
     @Test
+    fun `동승자가 탔어요를 누르면 탑승 처리되고, 차량 앱 기록은 주행거리만 채운다`() {
+        val tripId = startTrip()
+
+        mockMvc.post("/api/trips/$tripId/me/boarded") { bearer(sua) }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.boardings[0].boardedAt") { exists() }
+            jsonPath("$.data.boardings[0].boardOdometerKm") { doesNotExist() }
+        }
+        val reportedAt = mockMvc.get("/api/trips/$tripId") { bearer(sua) }.data(objectMapper)["boardings"][0]["boardedAt"].asText()
+
+        mockMvc.post("/api/trips/$tripId/boardings/$suaId/board") {
+            bearer(jihoon)
+            json("""{"occurredAt": "2026-11-09T08:10:00+09:00", "odometerKm": 10005.0}""")
+        }.andExpect {
+            jsonPath("$.data.boardings[0].boardOdometerKm") { value(10005.0) }
+            jsonPath("$.data.boardings[0].boardedAt") { value(reportedAt) } // 처음 알린 시각 유지
+        }
+    }
+
+    @Test
+    fun `운행의 동승자가 아니면 탔어요를 누를 수 없다`() {
+        val tripId = startTrip()
+
+        mockMvc.post("/api/trips/$tripId/me/boarded") { bearer(jihoon) }.andExpect {
+            status { isForbidden() }
+            jsonPath("$.error.code") { value("TRIP_ACCESS_DENIED") }
+        }
+    }
+
+    @Test
     fun `탈 지점을 바꾸고 불참 처리한다`() {
         val tripId = startTrip()
 

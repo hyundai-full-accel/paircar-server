@@ -17,7 +17,7 @@ data class DetourConfirmationRequestedEvent(
     val detourKm: BigDecimal,
 )
 
-// 크루 멤버가 그날 출석을 바꿈 (안 타요, 다시 타요, 그날만 다른 곳에서 타요)
+// 크루 멤버가 그날 출석을 바꿈 (안 타요, 다시 타요, 그날만 다른 곳에서 타요, N분 늦어요)
 // 출발 전이라 그날 운전자가 정해지지 않았으므로 바꾼 사람을 뺀 크루 멤버 전원에게 알림
 data class AttendanceChangedEvent(
     val crewId: Long,
@@ -26,6 +26,7 @@ data class AttendanceChangedEvent(
     val serviceDate: LocalDate,
     val attending: Boolean,
     val boardPlace: AttendancePlace?,
+    val delayMinutes: Int?,
     val recipientMemberIds: List<Long>,
 )
 

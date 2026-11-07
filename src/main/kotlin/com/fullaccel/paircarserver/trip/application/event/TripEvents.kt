@@ -18,6 +18,7 @@ data class RiderBoardedEvent(
     val riderMemberId: Long,
     val riderCrewMemberId: Long,
     val riderNickname: String,
+    val byRider: Boolean = false, // 동승자가 "탔어요"로 직접 알림 (운전자에게도 알림)
 )
 
 data class TripEndedEvent(

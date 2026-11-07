@@ -8,6 +8,7 @@ import java.time.LocalTime
 data class UpdateCrewCommand(
     val name: String,
     val departureTime: LocalTime?,
+    val arrivalTime: LocalTime?,
     val departureDays: Set<DayOfWeek>,
     val originPlaceId: Long?,
     val destinationPlaceId: Long?,
@@ -15,8 +16,9 @@ data class UpdateCrewCommand(
     val includeDriver: Boolean,
 )
 
-// 출석 변경. boardPlaceId가 null이면 기본 탈 곳
+// 출석 변경. boardPlaceId가 null이면 기본 탈 곳, delayMinutes는 출발 전에 알리는 그날 지각
 data class AttendanceCommand(
     val attending: Boolean,
     val boardPlaceId: Long?,
+    val delayMinutes: Int? = null,
 )

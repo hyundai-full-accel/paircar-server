@@ -1,8 +1,10 @@
 package com.fullaccel.paircarserver.crew.application.dto
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fullaccel.paircarserver.crew.domain.CrewMember
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
+import java.time.LocalTime
 
 data class CrewMemberResult(
     val crewMemberId: Long,
@@ -16,6 +18,9 @@ data class CrewMemberResult(
     val boardPlace: CrewPlaceResult?,
     @field:Schema(description = "동승자로 탈 때 평소 내릴 곳")
     val alightPlace: CrewPlaceResult?,
+    @field:Schema(description = "평소 픽업 시각 (KST, HH:mm)", type = "string", example = "07:32")
+    @field:JsonFormat(pattern = "HH:mm")
+    val pickupTime: LocalTime?,
 ) {
     companion object {
         fun from(crewMember: CrewMember, driver: Boolean) = CrewMemberResult(
@@ -27,6 +32,7 @@ data class CrewMemberResult(
             driver = driver,
             boardPlace = crewMember.boardPlace?.let(CrewPlaceResult::from),
             alightPlace = crewMember.alightPlace?.let(CrewPlaceResult::from),
+            pickupTime = crewMember.pickupTime,
         )
     }
 }

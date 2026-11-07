@@ -145,6 +145,35 @@ class TripApiTest(
     }
 
     @Test
+    fun `운행 목록은 그 달 운행과 동승자가 탄 곳, 시각, 거리를 준다`() {
+        val tripId = startTrip()
+        mockMvc.post("/api/trips/$tripId/boardings/$suaId/board") {
+            bearer(jihoon)
+            json("""{"occurredAt": "2026-11-09T08:10:00+09:00", "odometerKm": 10005.0}""")
+        }
+        mockMvc.post("/api/trips/$tripId/end") {
+            bearer(jihoon)
+            json("""{"endedAt": "2026-11-09T08:30:00+09:00", "endOdometerKm": 10017.0, "tollFareWon": 0}""")
+        }
+
+        mockMvc.get("/api/crews/$crewId/trips?month=2026-11") { bearer(sua) }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.length()") { value(1) }
+            jsonPath("$.data[0].tripId") { value(tripId) }
+            jsonPath("$.data[0].driverNickname") { value("지훈") }
+            jsonPath("$.data[0].originName") { value("지훈 집") }
+            jsonPath("$.data[0].distanceKm") { value(17.0) }
+            jsonPath("$.data[0].riders[0].nickname") { value("수아") }
+            jsonPath("$.data[0].riders[0].boardPlaceName") { value("○○아파트 정문") }
+            jsonPath("$.data[0].riders[0].boardedAt") { exists() }
+            jsonPath("$.data[0].riders[0].rideDistanceKm") { value(12.0) }
+        }
+        mockMvc.get("/api/crews/$crewId/trips?month=2026-10") { bearer(sua) }.andExpect {
+            jsonPath("$.data.length()") { value(0) }
+        }
+    }
+
+    @Test
     fun `진행 중인 운행이 있는데 또 시작하면 409와 함께 그 운행 ID를 준다`() {
         val tripId = startTrip()
 

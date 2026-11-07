@@ -14,6 +14,7 @@ import java.time.YearMonth
 // 월 영수증 (기획서 영수증 화면의 항목). 합계는 하루치 줄을 합산해 계산함
 data class ReceiptResult(
     val receiptId: Long,
+    val crewId: Long,
     val payerCrewMemberId: Long,
     val payerMemberId: Long,
     val payerNickname: String,
@@ -57,6 +58,7 @@ data class ReceiptResult(
             }
             return ReceiptResult(
                 receiptId = receipt.id,
+                crewId = receipt.payer.crew.id,
                 payerCrewMemberId = receipt.payer.id,
                 payerMemberId = receipt.payer.member.id,
                 payerNickname = receipt.payer.member.nickname,

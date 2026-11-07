@@ -119,6 +119,7 @@ class SettlementApiTest(
 
         mockMvc.get("/api/receipts/$receiptId") { bearer(sua) }.andExpect {
             status { isOk() }
+            jsonPath("$.data.crewId") { value(crewId) }
             jsonPath("$.data.boardingDays") { value(18) }
             jsonPath("$.data.sharedDistanceKm") { value(216.0) }
             jsonPath("$.data.detourKm") { value(54.0) }

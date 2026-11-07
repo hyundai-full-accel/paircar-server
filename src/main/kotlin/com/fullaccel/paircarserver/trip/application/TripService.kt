@@ -6,8 +6,10 @@ import com.fullaccel.paircarserver.trip.application.dto.SegmentCommand
 import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.TripResult
+import com.fullaccel.paircarserver.trip.application.dto.TripSummaryResult
 import com.fullaccel.paircarserver.trip.domain.Boarding
 import java.time.LocalDate
+import java.time.YearMonth
 
 // 운행, 탑승, 구간. 쓰기 요청은 그 운행의 운전자(driverMemberId)만 할 수 있음
 // 예외: 탈 지점 변경, 불참은 동승자 본인도 할 수 있음 (requesterMemberId)
@@ -25,6 +27,9 @@ interface TripService {
 
     // 크루의 진행 중인 운행. 없으면 null
     fun getCurrentTrip(crewId: Long): TripResult?
+
+    // 크루의 그 달(운행일 KST) 운행 목록. 시작 순
+    fun getTripsOfMonth(crewId: Long, month: YearMonth): List<TripSummaryResult>
 
     // 이미 탑승 기록이 있으면 처음 값을 유지함
     fun recordBoarding(driverMemberId: Long, tripId: Long, crewMemberId: Long, command: BoardingEventCommand): TripResult

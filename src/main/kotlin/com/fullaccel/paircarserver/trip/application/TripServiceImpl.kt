@@ -18,6 +18,7 @@ import com.fullaccel.paircarserver.trip.application.dto.SettlementTrip
 import com.fullaccel.paircarserver.trip.application.dto.StartTripCommand
 import com.fullaccel.paircarserver.trip.application.dto.TripInProgress
 import com.fullaccel.paircarserver.trip.application.dto.TripResult
+import com.fullaccel.paircarserver.trip.application.dto.TripSummaryResult
 import com.fullaccel.paircarserver.trip.application.event.BoardPlaceChangedEvent
 import com.fullaccel.paircarserver.trip.application.event.BoardingCanceledEvent
 import com.fullaccel.paircarserver.trip.application.event.RiderBoardedEvent
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.YearMonth
 
 @Service
 @Transactional(readOnly = true)
@@ -111,6 +113,13 @@ class TripServiceImpl(
     }
 
     override fun getTrip(tripId: Long): TripResult = toResult(getTripEntity(tripId))
+
+    override fun getTripsOfMonth(crewId: Long, month: YearMonth): List<TripSummaryResult> {
+        crewService.getCrewEntity(crewId)
+        val trips = tripRepository.findAllByDriverCrewIdAndServiceDateBetweenOrderByStartedAtAsc(crewId, month.atDay(1), month.atEndOfMonth())
+        val boardingsByTrip = boardingRepository.findAllByTripIdInOrderById(trips.map { it.id }).groupBy { it.trip.id }
+        return trips.map { TripSummaryResult.of(it, boardingsByTrip[it.id].orEmpty()) }
+    }
 
     override fun getCurrentTrip(crewId: Long): TripResult? =
         tripRepository.findFirstByDriverCrewIdAndEndedAtIsNullOrderByStartedAtDesc(crewId)?.let { toResult(it) }

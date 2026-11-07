@@ -10,5 +10,8 @@ interface BoardingRepository : JpaRepository<Boarding, Long> {
 
     fun findByTripIdAndCrewMemberId(tripId: Long, crewMemberId: Long): Boarding?
 
+    @EntityGraph(attributePaths = ["crewMember.member", "boardPlace", "alightPlace"])
+    fun findAllByTripIdInOrderById(tripIds: Collection<Long>): List<Boarding>
+
     fun findAllByTripIdInAndBoardedAtIsNotNull(tripIds: Collection<Long>): List<Boarding>
 }

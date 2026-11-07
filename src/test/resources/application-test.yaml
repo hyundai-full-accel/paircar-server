@@ -1,3 +1,5 @@
 paircar:
+  cors:
+    allowed-origins: https://web.paircar.test
   invite:
     base-url: https://paircar.test/join/

@@ -35,7 +35,7 @@ docker compose -f infra/compose.yaml up -d --build --wait
    cp infra/.env.example infra/.env
    ```
 
-   `POSTGRES_PASSWORD`, `DOMAIN`, `CERTBOT_EMAIL`, `PAIRCAR_INVITE_BASE_URL`(https 주소), VAPID 키를 채웁니다.
+   `POSTGRES_PASSWORD`, `DOMAIN`, `CERTBOT_EMAIL`, `PAIRCAR_CORS_ALLOWED_ORIGINS`, `PAIRCAR_INVITE_BASE_URL`(동승자 웹의 https 주소), VAPID 키를 채웁니다.
 
 ### 2. 인증서 발급 (처음 한 번)
 
@@ -73,6 +73,7 @@ nginx가 떠 있는 동안에는 80 포트를 nginx가 쓰므로, 갱신은 webr
 | `HTTP_PORT`, `HTTPS_PORT` | | | 기본값 80, 443 |
 | `DOMAIN` | | 필수 | 인증서를 받을 도메인 (예: `api.paircar.app`) |
 | `CERTBOT_EMAIL` | | 필수 | 인증서 만료 알림 메일 |
+| `PAIRCAR_CORS_ALLOWED_ORIGINS` | | 필수 | 동승자 웹 주소 (예: `https://app.paircar.app`). 웹은 따로 배포하므로 이 출처만 API 호출을 허용. 기본값 `http://localhost:3000` |
 | `PAIRCAR_INVITE_BASE_URL` | | 권장 | 동승자 웹의 초대 참여 주소. 초대 링크, QR에 들어감 |
 | `PAIRCAR_VAPID_PUBLIC_KEY`, `PAIRCAR_VAPID_PRIVATE_KEY` | | 권장 | Web Push 키 (`npx web-push generate-vapid-keys`). 비우면 Push만 꺼짐 |
 | `PAIRCAR_VAPID_SUBJECT` | | 권장 | Web Push 연락처 (`mailto:...`) |
@@ -82,3 +83,4 @@ nginx가 떠 있는 동안에는 80 포트를 nginx가 쓰므로, 갱신은 webr
 - 외부에 열리는 포트는 nginx뿐입니다. 서버(8080)와 DB(5432)는 내부 네트워크에만 있습니다.
 - HTTPS에서는 HSTS를 켭니다. 한 번 HTTPS로 접속한 브라우저는 1년 동안 HTTP로 접속하지 않습니다.
 - Web Push와 실제 차량(Android) 연동은 HTTPS가 필요합니다. 로컬 HTTP에서는 `localhost`만 예외입니다.
+- nginx가 직접 내는 429, 503 응답에는 CORS 헤더가 없습니다. 동승자 웹에서는 네트워크 오류로 보이므로 잠시 뒤 다시 시도하면 됩니다.

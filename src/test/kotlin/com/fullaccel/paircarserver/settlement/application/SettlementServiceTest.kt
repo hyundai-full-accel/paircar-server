@@ -220,11 +220,21 @@ class SettlementServiceTest(
     }
 
     @Test
-    fun `유가 정보가 없으면 FUEL_PRICE_NOT_FOUND`() {
+    fun `차량 유가가 없으면 그달 공공 유가를 쓴다`() {
         carService.updateCar(jihoon, carId, UpdateCarCommand(FuelType.GASOLINE, null, null))
         commuteDays(november, 1)
 
-        val e = assertThrows<BusinessException> { settlementService.issueReceipts(crewId, november) }
+        val receipt = settlementService.issueReceipts(crewId, november).single()
+
+        assertEquals(1684, receipt.fuelPriceWon) // V4 초기 데이터의 2026-11 휘발유
+    }
+
+    @Test
+    fun `차량 유가도 그달 공공 유가도 없으면 FUEL_PRICE_NOT_FOUND`() {
+        carService.updateCar(jihoon, carId, UpdateCarCommand(FuelType.GASOLINE, null, null))
+        commuteDays(december, 1) // 초기 데이터는 2026-11까지
+
+        val e = assertThrows<BusinessException> { settlementService.issueReceipts(crewId, december) }
 
         assertEquals(ErrorCode.FUEL_PRICE_NOT_FOUND, e.errorCode)
     }

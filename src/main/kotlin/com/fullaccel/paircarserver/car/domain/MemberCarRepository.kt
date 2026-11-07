@@ -7,6 +7,8 @@ interface MemberCarRepository : JpaRepository<MemberCar, Long> {
 
     fun existsByMemberIdAndCarId(memberId: Long, carId: Long): Boolean
 
+    fun existsByMemberId(memberId: Long): Boolean
+
     @EntityGraph(attributePaths = ["car"])
     fun findAllByMemberId(memberId: Long): List<MemberCar>
 }

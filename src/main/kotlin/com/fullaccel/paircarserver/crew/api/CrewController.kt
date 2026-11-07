@@ -1,8 +1,10 @@
 package com.fullaccel.paircarserver.crew.api
 
 import com.fullaccel.paircarserver.crew.api.dto.CreateCrewRequest
+import com.fullaccel.paircarserver.crew.api.dto.UpdateCrewRequest
 import com.fullaccel.paircarserver.crew.application.CrewInviteService
 import com.fullaccel.paircarserver.crew.application.CrewService
+import com.fullaccel.paircarserver.crew.application.CrewSettingService
 import com.fullaccel.paircarserver.crew.application.dto.CrewMemberResult
 import com.fullaccel.paircarserver.crew.application.dto.CrewResult
 import com.fullaccel.paircarserver.crew.application.dto.InviteResult
@@ -15,6 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 class CrewController(
     private val crewService: CrewService,
     private val crewInviteService: CrewInviteService,
+    private val crewSettingService: CrewSettingService,
 ) {
 
     @Operation(summary = "크루 생성", description = "만든 사람은 자동으로 크루에 참여합니다.")
@@ -50,6 +54,22 @@ class CrewController(
     ): ApiResponse<CrewResult> {
         crewService.validateCrewAccess(crewId, memberId)
         return ApiResponse.ok(crewService.getCrew(crewId))
+    }
+
+    @Operation(
+        summary = "크루 설정 수정",
+        description = "이름, 기본 일정(출발 시각, 요일, 출발지, 목적지), 정산 방식을 바꿉니다. 바꿀 수 있는 값 전체를 보내고, null은 그 값을 지웁니다. " +
+            "차를 등록한 크루 멤버만 바꿀 수 있습니다(CREW_DRIVER_ONLY). 정산 방식은 내는 사람이 정하지 않게 하려는 것입니다. " +
+            "일정은 기본값이라 운행은 여전히 그날 정한 출발지, 목적지로 시작합니다.",
+    )
+    @PutMapping("/{crewId}")
+    fun updateCrew(
+        @LoginMember memberId: Long,
+        @PathVariable crewId: Long,
+        @Valid @RequestBody request: UpdateCrewRequest,
+    ): ApiResponse<CrewResult> {
+        crewService.validateCrewAccess(crewId, memberId)
+        return ApiResponse.ok(crewSettingService.updateCrew(memberId, crewId, request.toCommand()))
     }
 
     @Operation(summary = "크루 멤버 목록", description = "참여 순서대로 반환합니다. crewMemberId로 운행, 우회 거리 API를 호출합니다.")

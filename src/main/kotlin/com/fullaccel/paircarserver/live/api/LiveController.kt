@@ -37,7 +37,8 @@ class LiveController(
         summary = "실시간 이벤트 구독 (SSE)",
         description = "연결되면 먼저 connected 이벤트가 옵니다. 25초마다 keepalive 주석이 옵니다. " +
             "동승자: trip.started, vehicle.location, vehicle.approaching, vehicle.arrived, rider.boarded, driver.delayed, trip.ended. " +
-            "운전자: rider.delayed, rider.here, rider.absent, rider.place-changed.",
+            "운전자: rider.delayed, rider.here, rider.absent, rider.place-changed. " +
+            "크루 멤버 모두: rider.attendance-changed (출발 전 출석 변경, data에 serviceDate), detour.confirm-requested.",
     )
     @SecurityRequirements
     @GetMapping("/events", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])

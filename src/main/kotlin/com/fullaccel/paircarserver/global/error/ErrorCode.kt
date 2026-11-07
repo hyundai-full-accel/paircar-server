@@ -39,6 +39,9 @@ enum class ErrorCode(
     DETOUR_NOT_FOUND(HttpStatus.NOT_FOUND, "우회 거리를 찾을 수 없습니다."),
     DETOUR_SAME_PASSENGER_AND_DRIVER(HttpStatus.BAD_REQUEST, "동승자와 운전자가 같을 수 없습니다."),
     DETOUR_CONFIRMER_NOT_PARTY(HttpStatus.FORBIDDEN, "우회 거리의 운전자나 동승자만 확인할 수 있습니다."),
+    CREW_DRIVER_ONLY(HttpStatus.FORBIDDEN, "차량을 등록한 크루 멤버만 할 수 있습니다."),
+    CREW_MEMBER_SELF_OR_DRIVER_ONLY(HttpStatus.FORBIDDEN, "본인이나 차량을 등록한 크루 멤버만 바꿀 수 있습니다."),
+    ATTENDANCE_DATE_PASSED(HttpStatus.BAD_REQUEST, "지난 날짜의 출석은 바꿀 수 없습니다."),
 
     // 운행
     TRIP_NOT_FOUND(HttpStatus.NOT_FOUND, "운행을 찾을 수 없습니다."),

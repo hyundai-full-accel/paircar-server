@@ -28,4 +28,21 @@ class CrewMember(
 
     @Column(nullable = false, updatable = false)
     val joinedAt: Instant = Instant.now(),
-) : BaseEntity()
+) : BaseEntity() {
+
+    // 동승자로 탈 때 평소 탈 곳, 내릴 곳. 그날만 다르면 출석(CrewAttendance)에서 바꿈
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_place_id")
+    var boardPlace: CrewPlace? = null
+        protected set
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "alight_place_id")
+    var alightPlace: CrewPlace? = null
+        protected set
+
+    fun changePlaces(boardPlace: CrewPlace?, alightPlace: CrewPlace?) {
+        this.boardPlace = boardPlace
+        this.alightPlace = alightPlace
+    }
+}

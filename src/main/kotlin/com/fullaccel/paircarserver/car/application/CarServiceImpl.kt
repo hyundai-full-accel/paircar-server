@@ -58,6 +58,8 @@ class CarServiceImpl(
         return memberCarRepository.findAllByMemberId(memberId).map { CarResult.from(it.car) }
     }
 
+    override fun hasCar(memberId: Long): Boolean = memberCarRepository.existsByMemberId(memberId)
+
     override fun validateMemberCar(memberId: Long, carId: Long) {
         if (!memberCarRepository.existsByMemberIdAndCarId(memberId, carId)) {
             throw BusinessException(ErrorCode.CAR_NOT_REGISTERED_TO_MEMBER)

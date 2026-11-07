@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonValue
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 
 // 클라이언트(동승자 웹, 차량 앱)로 보내는 실시간 이벤트. SSE event 이름은 type.value
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -29,6 +30,9 @@ enum class LiveEventType(@get:JsonValue val value: String) {
     RIDER_HERE("rider.here"),
     RIDER_ABSENT("rider.absent"),
     RIDER_PLACE_CHANGED("rider.place-changed"),
+
+    // 크루 멤버 모두 (출발 전이라 그날 운전자가 정해지지 않음). 차량 앱이 오늘 태울 사람, 경유지를 다시 정함
+    RIDER_ATTENDANCE_CHANGED("rider.attendance-changed"),
 
     // 운전자, 동승자 모두
     DETOUR_CONFIRM_REQUESTED("detour.confirm-requested"),
@@ -75,6 +79,22 @@ data class RiderPlaceData(
     val latitude: BigDecimal,
     val longitude: BigDecimal,
 ) : LiveEventData
+
+data class AttendanceData(
+    val crewId: Long,
+    val crewMemberId: Long,
+    val nickname: String,
+    val serviceDate: LocalDate,
+    val attending: Boolean,
+    val boardPlace: PlaceData?, // 그날 탈 곳 (그날만 바꾼 곳, 없으면 기본 탈 곳)
+) : LiveEventData
+
+data class PlaceData(
+    val placeId: Long,
+    val name: String,
+    val latitude: BigDecimal,
+    val longitude: BigDecimal,
+)
 
 data class DetourData(
     val detourId: Long,

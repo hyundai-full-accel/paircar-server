@@ -43,6 +43,8 @@ sequenceDiagram
     S-->>C: crewId (만든 사람은 자동 참여)
     C->>S: POST /api/crews/{crewId}/places (지훈 집, 판교 본관, ○○아파트 정문)
     S-->>C: placeId들
+    C->>S: PUT /api/crews/{crewId} {departureTime: 08:00, departureDays: 월~금, origin: 집, destination: 본관}
+    Note over C: 크루 기본 일정. 운행은 그날 정한 대로 시작하므로 바뀌어도 됨
 ```
 
 - 계좌가 없으면 운행을 시작할 수 없습니다(`BANK_ACCOUNT_REQUIRED`). 영수증에 넣을 계좌이기 때문입니다.
@@ -140,6 +142,8 @@ sequenceDiagram
 
     rect rgba(127,119,221,0.08)
     Note over V,W: ① 출발
+    C->>S: GET /api/crews/{crewId}/attendance/{오늘}
+    S-->>C: 수아: 탐, 정문 → 본관 (평소 탈 곳, 기록 없으면 기본값)
     V-->>C: 시동, Odometer 10000.0
     C->>S: POST /api/trips {crewId, carId, origin: 집, destination: 본관, riders: [수아: 정문 → 본관]}
     S-->>C: tripId, waypoints: [정문]
@@ -192,6 +196,11 @@ sequenceDiagram
     participant S as 크루 서버
     participant C as 차량 앱 (지훈)
     participant V as 내비 · TTS
+
+    Note over W,V: 출발 전 "내일은 안 타요" (출석)
+    W->>S: PUT /crews/{crewId}/members/{수아}/attendance/{내일} {attending: false}
+    S--)C: rider.attendance-changed (SSE)
+    Note over C: 내일 출발 때 riders에서 수아를 뺌
 
     Note over W,V: "5분 늦어요" (경로는 그대로)
     W->>S: POST /trips/{tripId}/live/me/delay {minutes: 5}

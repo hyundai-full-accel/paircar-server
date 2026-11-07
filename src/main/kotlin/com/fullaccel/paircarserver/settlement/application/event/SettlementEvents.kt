@@ -11,3 +11,13 @@ data class ReceiptIssuedEvent(
     val payeeNickname: String,
     val amountWon: Int,
 )
+
+// 내는 사람이 영수증 기록 확인을 요청함. 받는 사람(운전자)에게 알림
+data class ReceiptInquiryCreatedEvent(
+    val receiptId: Long,
+    val inquiryId: Long,
+    val month: YearMonth,
+    val payeeMemberId: Long,
+    val requesterNickname: String,
+    val message: String,
+)

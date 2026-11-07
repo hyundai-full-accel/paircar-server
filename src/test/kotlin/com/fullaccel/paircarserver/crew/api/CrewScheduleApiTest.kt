@@ -265,4 +265,33 @@ class CrewScheduleApiTest(
             jsonPath("$.error.code") { value("INVALID_INPUT") }
         }
     }
+
+    @Test
+    fun `정산 기준에 동의하고, 정산 방식이 바뀌면 다시 동의를 받는다`() {
+        mockMvc.post("/api/crews/$crewId/members/$suaId/settlement-agreement") { bearer(sua) }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.settlementAgreed") { value(true) }
+        }
+
+        mockMvc.put("/api/crews/$crewId") {
+            bearer(jihoon)
+            json(crewSettings(mode = "EQUAL"))
+        }
+        mockMvc.get("/api/crews/$crewId/members") { bearer(sua) }.andExpect {
+            jsonPath("$.data[1].settlementAgreedAt") { exists() }
+            jsonPath("$.data[1].settlementAgreed") { value(false) }
+        }
+
+        mockMvc.post("/api/crews/$crewId/members/$suaId/settlement-agreement") { bearer(sua) }.andExpect {
+            jsonPath("$.data.settlementAgreed") { value(true) }
+        }
+    }
+
+    @Test
+    fun `정산 기준 동의는 본인만 할 수 있다`() {
+        mockMvc.post("/api/crews/$crewId/members/$suaId/settlement-agreement") { bearer(jihoon) }.andExpect {
+            status { isForbidden() }
+            jsonPath("$.error.code") { value("CREW_MEMBER_SELF_ONLY") }
+        }
+    }
 }

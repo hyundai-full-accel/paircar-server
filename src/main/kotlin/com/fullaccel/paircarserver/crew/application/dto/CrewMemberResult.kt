@@ -21,6 +21,10 @@ data class CrewMemberResult(
     @field:Schema(description = "평소 픽업 시각 (KST, HH:mm)", type = "string", example = "07:32")
     @field:JsonFormat(pattern = "HH:mm")
     val pickupTime: LocalTime?,
+    @field:Schema(description = "정산 기준에 동의한 시각")
+    val settlementAgreedAt: Instant?,
+    @field:Schema(description = "지금 정산 방식에 동의했는지. 동의 뒤 정산 방식이 바뀌면 false")
+    val settlementAgreed: Boolean,
 ) {
     companion object {
         fun from(crewMember: CrewMember, driver: Boolean) = CrewMemberResult(
@@ -33,6 +37,8 @@ data class CrewMemberResult(
             boardPlace = crewMember.boardPlace?.let(CrewPlaceResult::from),
             alightPlace = crewMember.alightPlace?.let(CrewPlaceResult::from),
             pickupTime = crewMember.pickupTime,
+            settlementAgreedAt = crewMember.settlementAgreedAt,
+            settlementAgreed = crewMember.crew.isSettlementAgreed(crewMember.settlementAgreedAt),
         )
     }
 }

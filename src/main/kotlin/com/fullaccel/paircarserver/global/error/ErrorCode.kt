@@ -40,6 +40,7 @@ enum class ErrorCode(
     DETOUR_SAME_PASSENGER_AND_DRIVER(HttpStatus.BAD_REQUEST, "동승자와 운전자가 같을 수 없습니다."),
     DETOUR_CONFIRMER_NOT_PARTY(HttpStatus.FORBIDDEN, "우회 거리의 운전자나 동승자만 확인할 수 있습니다."),
     CREW_DRIVER_ONLY(HttpStatus.FORBIDDEN, "차량을 등록한 크루 멤버만 할 수 있습니다."),
+    CREW_MEMBER_SELF_ONLY(HttpStatus.FORBIDDEN, "본인만 할 수 있습니다."),
     CREW_MEMBER_SELF_OR_DRIVER_ONLY(HttpStatus.FORBIDDEN, "본인이나 차량을 등록한 크루 멤버만 바꿀 수 있습니다."),
     ATTENDANCE_DATE_PASSED(HttpStatus.BAD_REQUEST, "지난 날짜의 출석은 바꿀 수 없습니다."),
 
@@ -63,5 +64,6 @@ enum class ErrorCode(
     RECEIPT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "영수증의 동승자나 운전자만 조회할 수 있습니다."),
     FUEL_PRICE_NOT_FOUND(HttpStatus.CONFLICT, "정산 월의 유가 정보가 없습니다. 차량 유가를 직접 입력해 주세요."),
     SETTLEMENT_MODE_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "아직 지원하지 않는 정산 방식입니다."),
+    RECEIPT_INQUIRY_NOT_FOUND(HttpStatus.NOT_FOUND, "기록 확인 요청을 찾을 수 없습니다."),
     SETTLEMENT_MONTH_NOT_CLOSED(HttpStatus.BAD_REQUEST, "아직 끝나지 않은 달은 정산할 수 없습니다."),
 }

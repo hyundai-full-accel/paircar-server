@@ -56,6 +56,11 @@ class Crew(
     var departureDays: Set<DayOfWeek> = emptySet()
         protected set
 
+    // 정산 방식(나누는 방법, 운전자 포함)이 마지막으로 바뀐 시각. 이보다 먼저 한 동의는 다시 받아야 함
+    @Column
+    var settlementChangedAt: Instant? = null
+        protected set
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_place_id")
     var originPlace: CrewPlace? = null
@@ -82,7 +87,14 @@ class Crew(
         this.departureDays = departureDays
         this.originPlace = originPlace
         this.destinationPlace = destinationPlace
+        if (this.settlementMode != settlementMode || this.includeDriver != includeDriver) {
+            this.settlementChangedAt = Instant.now()
+        }
         this.settlementMode = settlementMode
         this.includeDriver = includeDriver
     }
+
+    // 이 시각에 한 동의가 지금 정산 방식에 대한 것인지
+    fun isSettlementAgreed(agreedAt: Instant?): Boolean =
+        agreedAt != null && settlementChangedAt?.let { !agreedAt.isBefore(it) } ?: true
 }

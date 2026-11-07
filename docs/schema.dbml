@@ -92,6 +92,7 @@ Table crews {
   monthly_fixed_won int                                       // 월 정액 금액 (settlement_mode가 FIXED_MONTHLY일 때만)
   departure_time time                                         // 평소 출발 시각 (KST). 아래 일정은 기본값이고 운행은 그날 정한 대로 시작
   arrival_time time                                           // 평소 도착 시각 (KST)
+  settlement_changed_at timestamptz                           // 정산 방식(나누는 방법, 운전자 포함)이 마지막으로 바뀐 시각. 이보다 먼저 한 동의는 다시 받음
   departure_days int [not null, default: 0]                   // 카풀하는 요일 비트 (월=1, 화=2, 수=4, ... 일=64)
   origin_place_id bigint [ref: > crew_places.id]              // 기본 출발지
   destination_place_id bigint [ref: > crew_places.id]         // 기본 목적지
@@ -134,6 +135,7 @@ Table crew_members {
   board_place_id bigint [ref: > crew_places.id]   // 동승자로 탈 때 평소 탈 곳
   alight_place_id bigint [ref: > crew_places.id]  // 동승자로 탈 때 평소 내릴 곳
   pickup_time time                                // 평소 픽업 시각 (KST)
+  settlement_agreed_at timestamptz                // 정산 기준에 동의한 시각
 
   indexes {
     (crew_id, member_id) [unique]  // 같은 크루에 중복 참여 방지
@@ -319,6 +321,20 @@ Table receipt_items {
 }
 
 // ---------- 실시간 알림 (live 모듈) ----------
+
+// 영수증 기록 확인 요청 ("이 기록에 문제가 있나요?"). 영수증은 바꾸지 않고 운전자가 보고 처리했다고 표시
+Table receipt_inquiries {
+  id bigint [pk, increment]                                 // 요청 식별자
+  receipt_id bigint [not null, ref: > receipts.id]          // 영수증
+  requester_id bigint [not null, ref: > crew_members.id]    // 요청한 사람 (영수증의 내는 사람)
+  message varchar(500) [not null]                           // 무엇이 이상한지
+  created_at timestamptz [not null]                         // 요청 시각
+  resolved_at timestamptz                                   // 운전자가 처리했다고 표시한 시각
+
+  indexes {
+    receipt_id  // 영수증의 요청 목록
+  }
+}
 
 // 브라우저 Web Push 구독 (기기, 브라우저마다 1행)
 // 알림 채널 데이터라 엔티티 연관관계 없이 member_id 값만 가짐 (live 모듈이 member 모듈에 묶이지 않도록)

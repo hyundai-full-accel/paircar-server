@@ -8,6 +8,7 @@ import com.fullaccel.paircarserver.live.application.dto.LiveEventType
 import com.fullaccel.paircarserver.live.application.dto.PushMessage
 import com.fullaccel.paircarserver.live.application.dto.PushUrgency
 import com.fullaccel.paircarserver.live.application.dto.ReceiptData
+import com.fullaccel.paircarserver.live.application.dto.ReceiptInquiryData
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -42,6 +43,11 @@ object PushMessages {
                 val data = event.data as ReceiptData
                 val monthNumber = data.month.substringAfter('-').toInt()
                 PushMessage(type, "${monthNumber}월 영수증이 도착했어요", "보낼 금액 ${won(data.amountWon)}", "/receipts/${data.receiptId}", ONE_DAY, PushUrgency.NORMAL)
+            }
+            LiveEventType.RECEIPT_INQUIRY_CREATED -> {
+                val data = event.data as ReceiptInquiryData
+                val monthNumber = data.month.substringAfter('-').toInt()
+                PushMessage(type, "${data.requesterNickname}님이 ${monthNumber}월 영수증 확인을 요청했어요", data.message.take(60), "/receipts/${data.receiptId}", ONE_DAY, PushUrgency.NORMAL)
             }
             else -> null
         }

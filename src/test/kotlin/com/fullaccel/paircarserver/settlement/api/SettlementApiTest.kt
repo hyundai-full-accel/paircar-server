@@ -161,4 +161,47 @@ class SettlementApiTest(
             jsonPath("$.error.fieldErrors[0].field") { value("month") }
         }
     }
+
+    @Test
+    fun `내는 사람이 기록 확인을 요청하고 운전자가 보고 처리한다`() {
+        commute(2)
+        val receiptId = mockMvc.post("/api/crews/$crewId/receipts?month=2026-11") { bearer(jihoon) }.data(objectMapper)[0]["receiptId"].asLong()
+
+        val inquiryId = mockMvc.post("/api/receipts/$receiptId/inquiries") {
+            bearer(sua)
+            json("""{"message": "11월 2일 거리가 이상해요"}""")
+        }.andExpect {
+            status { isCreated() }
+            jsonPath("$.data.requesterNickname") { value("수아") }
+            jsonPath("$.data.resolvedAt") { doesNotExist() }
+        }.data(objectMapper)["inquiryId"].asLong()
+
+        // 운전자(받는 사람)는 요청할 수 없고, 목록을 보고 처리함
+        mockMvc.post("/api/receipts/$receiptId/inquiries") {
+            bearer(jihoon)
+            json("""{"message": "x"}""")
+        }.andExpect { status { isForbidden() } }
+        mockMvc.get("/api/receipts/$receiptId/inquiries") { bearer(jihoon) }.andExpect {
+            jsonPath("$.data[0].message") { value("11월 2일 거리가 이상해요") }
+        }
+        mockMvc.post("/api/receipts/$receiptId/inquiries/$inquiryId/resolve") { bearer(sua) }.andExpect {
+            status { isForbidden() }
+        }
+        mockMvc.post("/api/receipts/$receiptId/inquiries/$inquiryId/resolve") { bearer(jihoon) }.andExpect {
+            status { isOk() }
+            jsonPath("$.data.resolvedAt") { exists() }
+        }
+    }
+
+    @Test
+    fun `영수증 당사자가 아니면 기록 확인 요청을 볼 수 없다`() {
+        commute(2)
+        val receiptId = mockMvc.post("/api/crews/$crewId/receipts?month=2026-11") { bearer(jihoon) }.data(objectMapper)[0]["receiptId"].asLong()
+        val outsider = mockMvc.createMemberToken(objectMapper, "남")
+
+        mockMvc.get("/api/receipts/$receiptId/inquiries") { bearer(outsider) }.andExpect {
+            status { isForbidden() }
+            jsonPath("$.error.code") { value("RECEIPT_ACCESS_DENIED") }
+        }
+    }
 }

@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -53,6 +54,21 @@ class CrewMemberController(
                 request.pickupTime,
             ),
         )
+    }
+
+    @Operation(
+        summary = "정산 기준 동의",
+        description = "지금 크루의 정산 방식(나누는 방법, 운전자 포함)에 동의합니다. 본인만 할 수 있습니다. " +
+            "동의 뒤 정산 방식이 바뀌면 크루원 목록의 settlementAgreed가 false가 되어 다시 동의를 받습니다.",
+    )
+    @PostMapping("/members/{crewMemberId}/settlement-agreement")
+    fun agreeSettlement(
+        @LoginMember memberId: Long,
+        @PathVariable crewId: Long,
+        @PathVariable crewMemberId: Long,
+    ): ApiResponse<CrewMemberResult> {
+        crewService.validateCrewAccess(crewId, memberId)
+        return ApiResponse.ok(crewSettingService.agreeSettlement(memberId, crewId, crewMemberId))
     }
 
     @Operation(

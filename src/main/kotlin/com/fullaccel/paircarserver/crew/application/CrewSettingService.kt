@@ -22,4 +22,7 @@ interface CrewSettingService {
         alightPlaceId: Long?,
         pickupTime: LocalTime?,
     ): CrewMemberResult
+
+    // 지금 정산 기준에 동의. 본인만 (CREW_MEMBER_SELF_ONLY). 다시 동의하면 시각만 새로 남김
+    fun agreeSettlement(requesterMemberId: Long, crewId: Long, crewMemberId: Long): CrewMemberResult
 }

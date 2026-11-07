@@ -39,6 +39,9 @@ enum class LiveEventType(@get:JsonValue val value: String) {
 
     // 동승자(내는 사람)가 받음
     RECEIPT_ISSUED("receipt.issued"),
+
+    // 운전자(받는 사람)가 받음
+    RECEIPT_INQUIRY_CREATED("receipt.inquiry-created"),
 }
 
 // 이벤트 종류별 내용
@@ -111,4 +114,12 @@ data class ReceiptData(
     val month: String, // 2026-11
     val amountWon: Int,
     val payeeNickname: String,
+) : LiveEventData
+
+data class ReceiptInquiryData(
+    val receiptId: Long,
+    val inquiryId: Long,
+    val month: String, // 2026-11
+    val requesterNickname: String,
+    val message: String,
 ) : LiveEventData

@@ -6,6 +6,7 @@ import com.fullaccel.paircarserver.live.application.dto.LiveEvent
 import com.fullaccel.paircarserver.live.application.dto.LiveEventType
 import com.fullaccel.paircarserver.live.application.dto.PushUrgency
 import com.fullaccel.paircarserver.live.application.dto.ReceiptData
+import com.fullaccel.paircarserver.live.application.dto.ReceiptInquiryData
 import com.fullaccel.paircarserver.live.application.dto.VehicleLocationData
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -36,6 +37,16 @@ class PushMessagesTest {
 
         assertEquals("11월 영수증이 도착했어요", message.title)
         assertEquals("보낼 금액 20,700원", message.body)
+        assertEquals("/receipts/3", message.url)
+    }
+
+    @Test
+    fun `기록 확인 요청은 운전자에게 누가 몇 월 영수증을 물었는지 보여준다`() {
+        val data = ReceiptInquiryData(receiptId = 3, inquiryId = 9, month = "2026-11", requesterNickname = "수아", message = "11월 2일 거리가 이상해요")
+        val message = PushMessages.of(LiveEvent(LiveEventType.RECEIPT_INQUIRY_CREATED, data = data))!!
+
+        assertEquals("수아님이 11월 영수증 확인을 요청했어요", message.title)
+        assertEquals("11월 2일 거리가 이상해요", message.body)
         assertEquals("/receipts/3", message.url)
     }
 

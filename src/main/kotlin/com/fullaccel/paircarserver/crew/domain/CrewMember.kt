@@ -47,6 +47,15 @@ class CrewMember(
     var pickupTime: LocalTime? = null
         protected set
 
+    // 정산 기준에 동의한 시각
+    @Column
+    var settlementAgreedAt: Instant? = null
+        protected set
+
+    fun agreeSettlement() {
+        this.settlementAgreedAt = Instant.now()
+    }
+
     fun changePlaces(boardPlace: CrewPlace?, alightPlace: CrewPlace?, pickupTime: LocalTime?) {
         this.boardPlace = boardPlace
         this.alightPlace = alightPlace

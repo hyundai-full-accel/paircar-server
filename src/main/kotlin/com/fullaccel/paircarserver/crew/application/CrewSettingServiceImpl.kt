@@ -59,6 +59,14 @@ class CrewSettingServiceImpl(
         return CrewMemberResult.from(crewMember, carService.hasCar(crewMember.member.id))
     }
 
+    @Transactional
+    override fun agreeSettlement(requesterMemberId: Long, crewId: Long, crewMemberId: Long): CrewMemberResult {
+        val crewMember = getCrewMemberOf(crewId, crewMemberId)
+        if (crewMember.member.id != requesterMemberId) throw BusinessException(ErrorCode.CREW_MEMBER_SELF_ONLY)
+        crewMember.agreeSettlement()
+        return CrewMemberResult.from(crewMember, carService.hasCar(requesterMemberId))
+    }
+
     private fun getCrewMemberOf(crewId: Long, crewMemberId: Long): CrewMember {
         val crewMember = crewService.getCrewMemberEntity(crewMemberId)
         if (crewMember.crew.id != crewId) throw BusinessException(ErrorCode.CREW_MISMATCH)

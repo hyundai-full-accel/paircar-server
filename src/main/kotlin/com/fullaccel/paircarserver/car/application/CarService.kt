@@ -24,6 +24,9 @@ interface CarService {
     // 차를 한 대라도 등록했는지. 운전할 수 있는 멤버로 보고 크루 설정 권한에 씀 (동승자 웹은 차를 등록하지 않음)
     fun hasCar(memberId: Long): Boolean
 
+    // 여러 멤버 중 차를 등록한 멤버 ID (크루원 목록의 운전자 표시)
+    fun memberIdsWithCar(memberIds: Collection<Long>): Set<Long>
+
     // 운행 시작 전 검증: 멤버가 이 차를 등록하지 않았으면 CAR_NOT_REGISTERED_TO_MEMBER
     fun validateMemberCar(memberId: Long, carId: Long)
 }

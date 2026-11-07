@@ -52,7 +52,7 @@ class CrewSettingServiceImpl(
             boardPlace = boardPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
             alightPlace = alightPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
         )
-        return CrewMemberResult.from(crewMember)
+        return CrewMemberResult.from(crewMember, carService.hasCar(crewMember.member.id))
     }
 
     private fun getCrewMemberOf(crewId: Long, crewMemberId: Long): CrewMember {

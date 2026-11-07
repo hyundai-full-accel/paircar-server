@@ -1,5 +1,6 @@
 package com.fullaccel.paircarserver.crew.application
 
+import com.fullaccel.paircarserver.car.application.CarService
 import com.fullaccel.paircarserver.crew.application.dto.CrewMemberResult
 import com.fullaccel.paircarserver.crew.application.dto.CrewResult
 import com.fullaccel.paircarserver.crew.domain.Crew
@@ -19,6 +20,7 @@ class CrewServiceImpl(
     private val crewRepository: CrewRepository,
     private val crewMemberRepository: CrewMemberRepository,
     private val memberService: MemberService,
+    private val carService: CarService,
 ) : CrewService {
 
     @Transactional
@@ -38,12 +40,15 @@ class CrewServiceImpl(
         if (crewMemberRepository.existsByCrewIdAndMemberId(crewId, memberId)) {
             throw BusinessException(ErrorCode.CREW_MEMBER_ALREADY_EXISTS)
         }
-        return CrewMemberResult.from(crewMemberRepository.save(CrewMember(crew = crew, member = member)))
+        val crewMember = crewMemberRepository.save(CrewMember(crew = crew, member = member))
+        return CrewMemberResult.from(crewMember, carService.hasCar(memberId))
     }
 
     override fun getCrewMembers(crewId: Long): List<CrewMemberResult> {
         getCrewEntity(crewId)
-        return crewMemberRepository.findAllByCrewIdOrderById(crewId).map(CrewMemberResult::from)
+        val members = crewMemberRepository.findAllByCrewIdOrderById(crewId)
+        val drivers = carService.memberIdsWithCar(members.map { it.member.id })
+        return members.map { CrewMemberResult.from(it, it.member.id in drivers) }
     }
 
     override fun getCrewsOfMember(memberId: Long): List<CrewResult> =

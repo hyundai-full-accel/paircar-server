@@ -4,7 +4,7 @@ import com.fullaccel.paircarserver.crew.api.dto.JoinAsNewMemberRequest
 import com.fullaccel.paircarserver.crew.application.CrewInviteService
 import com.fullaccel.paircarserver.crew.application.dto.CrewMemberResult
 import com.fullaccel.paircarserver.crew.application.dto.InviteJoinResult
-import com.fullaccel.paircarserver.crew.application.dto.InviteResult
+import com.fullaccel.paircarserver.crew.application.dto.InvitePreviewResult
 import com.fullaccel.paircarserver.global.auth.LoginMember
 import com.fullaccel.paircarserver.global.response.ApiResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -27,10 +27,13 @@ class InviteController(
     private val crewInviteService: CrewInviteService,
 ) {
 
-    @Operation(summary = "초대 조회", description = "참여 화면에 크루 이름을 보여줄 때 씁니다. 인증이 필요 없습니다.")
+    @Operation(
+        summary = "초대 조회",
+        description = "참여 화면에 보여 줄 크루 소개입니다 (이름, 일정, 출발지·목적지, 인원, 운전자 이름, 정산 방식, 크루 장소). 인증이 필요 없습니다.",
+    )
     @SecurityRequirements
     @GetMapping
-    fun getInvite(@PathVariable code: String): ApiResponse<InviteResult> =
+    fun getInvite(@PathVariable code: String): ApiResponse<InvitePreviewResult> =
         ApiResponse.ok(crewInviteService.getInvite(code))
 
     @Operation(

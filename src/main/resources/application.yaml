@@ -22,6 +22,10 @@ server:
   # nginx 게이트웨이가 보낸 X-Forwarded-* 헤더로 원래 주소, 프로토콜을 복원 (Swagger 서버 주소, 리다이렉트)
   forward-headers-strategy: framework
 
+springdoc:
+  # API 문서에는 /api만 (헬스체크, 테스트용 컨트롤러 제외)
+  paths-to-match: /api/**
+
 management:
   endpoints:
     web:

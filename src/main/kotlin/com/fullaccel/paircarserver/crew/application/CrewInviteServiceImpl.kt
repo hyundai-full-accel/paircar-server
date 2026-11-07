@@ -2,6 +2,7 @@ package com.fullaccel.paircarserver.crew.application
 
 import com.fullaccel.paircarserver.crew.application.dto.CrewMemberResult
 import com.fullaccel.paircarserver.crew.application.dto.InviteJoinResult
+import com.fullaccel.paircarserver.crew.application.dto.InvitePreviewResult
 import com.fullaccel.paircarserver.crew.application.dto.InviteResult
 import com.fullaccel.paircarserver.crew.domain.CrewInvite
 import com.fullaccel.paircarserver.crew.domain.CrewInviteRepository
@@ -20,6 +21,7 @@ import java.time.Instant
 class CrewInviteServiceImpl(
     private val crewInviteRepository: CrewInviteRepository,
     private val crewService: CrewService,
+    private val crewPlaceService: CrewPlaceService,
     private val memberService: MemberService,
     private val memberTokenService: MemberTokenService,
     private val inviteProperties: InviteProperties,
@@ -38,7 +40,16 @@ class CrewInviteServiceImpl(
         return toResult(crewInviteRepository.save(invite))
     }
 
-    override fun getInvite(code: String): InviteResult = toResult(getValidInvite(code))
+    override fun getInvite(code: String): InvitePreviewResult {
+        val invite = getValidInvite(code)
+        val crewId = invite.crew.id
+        return InvitePreviewResult.of(
+            invite = invite,
+            crew = crewService.getCrew(crewId),
+            members = crewService.getCrewMembers(crewId),
+            places = crewPlaceService.getPlaces(crewId),
+        )
+    }
 
     @Transactional
     override fun joinAsNewMember(code: String, nickname: String): InviteJoinResult {

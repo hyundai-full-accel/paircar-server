@@ -106,6 +106,52 @@ class CrewApiTest(
     }
 
     @Test
+    fun `초대 미리보기는 토큰 없이 크루 일정, 인원, 운전자 이름을 보여 준다`() {
+        mockMvc.post("/api/cars") {
+            bearer(jihoon)
+            json("""{"vehicleKey": "VK-1", "fuelType": "GASOLINE"}""")
+        }
+        val home = registerPlace("지훈 집")
+        val office = registerPlace("판교 본관")
+        mockMvc.put("/api/crews/$crewId") {
+            bearer(jihoon)
+            json(
+                """{"name": "판교 출근 크루", "departureTime": "07:10", "departureDays": ["MONDAY", "FRIDAY"],
+                    "originPlaceId": $home, "destinationPlaceId": $office, "settlementMode": "FAIR", "includeDriver": true}""",
+            )
+        }
+        joinAsNewMember("수아")
+
+        mockMvc.get("/api/invites/${invite()}").andExpect {
+            status { isOk() }
+            jsonPath("$.data.departureTime") { value("07:10") }
+            jsonPath("$.data.departureDays[1]") { value("FRIDAY") }
+            jsonPath("$.data.originPlace.name") { value("지훈 집") }
+            jsonPath("$.data.destinationPlace.name") { value("판교 본관") }
+            jsonPath("$.data.memberCount") { value(2) }
+            jsonPath("$.data.driverNicknames.length()") { value(1) }
+            jsonPath("$.data.driverNicknames[0]") { value("지훈") }
+            jsonPath("$.data.settlementMode") { value("FAIR") }
+            jsonPath("$.data.places.length()") { value(2) }
+        }
+    }
+
+    @Test
+    fun `크루원 목록은 차를 등록한 멤버를 운전자로 표시한다`() {
+        mockMvc.post("/api/cars") {
+            bearer(jihoon)
+            json("""{"vehicleKey": "VK-1", "fuelType": "GASOLINE"}""")
+        }
+        joinAsNewMember("수아")
+
+        mockMvc.get("/api/crews/$crewId/members") { bearer(jihoon) }.andExpect {
+            jsonPath("$.data[0].nickname") { value("지훈") }
+            jsonPath("$.data[0].driver") { value(true) }
+            jsonPath("$.data[1].driver") { value(false) }
+        }
+    }
+
+    @Test
     fun `초대 코드는 헷갈리는 글자 없는 8자이고 링크는 설정한 주소로 만든다`() {
         val data = mockMvc.post("/api/crews/$crewId/invites") { bearer(jihoon) }.data(objectMapper)
         val code = data["code"].asText()

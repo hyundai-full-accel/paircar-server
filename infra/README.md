@@ -80,6 +80,12 @@ nginx가 떠 있는 동안에는 80 포트를 nginx가 쓰므로, 갱신은 webr
 
 ## 참고
 
+- 로그로 요청 하나 따라가기: nginx 접근 로그의 `rid=`와 서버 로그의 `req=`가 같은 값입니다. 응답 헤더 `X-Request-Id`로도 받습니다.
+
+  ```bash
+  docker compose -f infra/compose.yaml logs app | grep 'req=<요청 ID>'
+  ```
+
 - 외부에 열리는 포트는 nginx뿐입니다. 서버(8080)와 DB(5432)는 내부 네트워크에만 있습니다.
 - HTTPS에서는 HSTS를 켭니다. 한 번 HTTPS로 접속한 브라우저는 1년 동안 HTTP로 접속하지 않습니다.
 - Web Push와 실제 차량(Android) 연동은 HTTPS가 필요합니다. 로컬 HTTP에서는 `localhost`만 예외입니다.

@@ -3,6 +3,7 @@ package com.fullaccel.paircarserver.settlement.application
 import com.fullaccel.paircarserver.crew.application.CrewService
 import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
+import com.fullaccel.paircarserver.global.logging.LogContext
 import com.fullaccel.paircarserver.global.time.KST_ZONE_ID
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -22,7 +23,7 @@ class MonthlySettlementScheduler(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Scheduled(cron = "\${paircar.settlement.auto-issue-cron:0 0 4 1 * *}", zone = KST_ZONE_ID)
-    fun issueLastMonth() {
+    fun issueLastMonth() = LogContext.job("monthly-settlement") {
         val month = YearMonth.now(clock).minusMonths(1)
         crewService.getAllCrewIds().forEach { crewId ->
             try {

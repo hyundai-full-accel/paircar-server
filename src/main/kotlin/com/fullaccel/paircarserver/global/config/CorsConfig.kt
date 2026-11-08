@@ -1,5 +1,6 @@
 package com.fullaccel.paircarserver.global.config
 
+import com.fullaccel.paircarserver.global.logging.RequestLoggingFilter
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,6 +21,7 @@ class CorsConfig {
             allowedOrigins = properties.allowedOrigins
             allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE")
             allowedHeaders = listOf(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE)
+            exposedHeaders = listOf(RequestLoggingFilter.HEADER) // 웹이 오류를 보고할 때 요청 ID를 읽을 수 있게
             allowCredentials = false // 쿠키를 쓰지 않음. 인증은 Authorization 헤더의 기기 토큰
             maxAge = Duration.ofHours(1).seconds // preflight 결과를 브라우저가 1시간 기억
         }

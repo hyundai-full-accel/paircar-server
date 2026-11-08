@@ -2,6 +2,7 @@ package com.fullaccel.paircarserver.global.auth
 
 import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
+import com.fullaccel.paircarserver.global.logging.LogContext
 import org.springframework.core.MethodParameter
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
@@ -27,7 +28,9 @@ class LoginMemberArgumentResolver(
         val header = webRequest.getHeader(HttpHeaders.AUTHORIZATION)
         val token = header?.takeIf { it.startsWith(BEARER_PREFIX) }?.removePrefix(BEARER_PREFIX)?.trim()
         if (token.isNullOrEmpty()) throw BusinessException(ErrorCode.UNAUTHORIZED)
-        return tokenAuthenticator.authenticate(token) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
+        val memberId = tokenAuthenticator.authenticate(token) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
+        LogContext.putMember(memberId) // 이 요청의 이후 로그에 m=멤버ID
+        return memberId
     }
 
     companion object {

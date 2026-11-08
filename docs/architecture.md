@@ -129,6 +129,7 @@ flowchart TD
 | 예외 | 서비스는 `BusinessException(ErrorCode)`를 던지고, 전역 핸들러가 HTTP 상태와 코드로 바꿉니다 |
 | 인증 | 컨트롤러 파라미터의 `@LoginMember`가 Bearer 토큰을 멤버 ID로 바꿉니다 |
 | 시간 | 저장은 UTC, 운행일과 정산 월은 KST |
+| 로깅 | 요청마다 `X-Request-Id`(nginx `$request_id`, 없으면 서버가 만듦)를 MDC에 넣고 응답 헤더로 돌려줌. 모든 로그 줄에 `[req=… m=멤버ID]`, 요청이 끝나면 `GET /api/… → 200 (34ms)` 한 줄. 토큰, 바디는 남기지 않고 SSE `ticket`은 가림. `@Async`에도 복사, 월 자동 정산은 `req=job:monthly-settlement`. nginx 접근 로그의 `rid=`와 같은 값 |
 
 ## 3. 서버 안의 흐름
 

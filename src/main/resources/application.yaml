@@ -22,6 +22,11 @@ server:
   # nginx 게이트웨이가 보낸 X-Forwarded-* 헤더로 원래 주소, 프로토콜을 복원 (Swagger 서버 주소, 리다이렉트)
   forward-headers-strategy: framework
 
+logging:
+  pattern:
+    # 로그 줄마다 요청 ID, 멤버 ID (global/logging/RequestLoggingFilter). 요청 밖 작업은 req=job:이름
+    level: "%5p [req=%X{requestId:-} m=%X{memberId:-}]"
+
 springdoc:
   # API 문서에는 /api만 (헬스체크, 테스트용 컨트롤러 제외)
   paths-to-match: /api/**

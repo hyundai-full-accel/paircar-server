@@ -1,12 +1,17 @@
 package com.fullaccel.paircarserver.live.application
 
 import com.fullaccel.paircarserver.crew.application.event.AttendanceChangedEvent
+import com.fullaccel.paircarserver.crew.application.event.AttendancePlace
+import com.fullaccel.paircarserver.crew.application.event.CrewMemberJoinedEvent
+import com.fullaccel.paircarserver.crew.application.event.CrewMemberPlacesChangedEvent
 import com.fullaccel.paircarserver.crew.application.event.DetourConfirmationRequestedEvent
 import com.fullaccel.paircarserver.live.application.dto.AttendanceData
+import com.fullaccel.paircarserver.live.application.dto.CrewMemberData
 import com.fullaccel.paircarserver.live.application.dto.DetourData
 import com.fullaccel.paircarserver.live.application.dto.LiveEvent
 import com.fullaccel.paircarserver.live.application.dto.LiveEventType
 import com.fullaccel.paircarserver.live.application.dto.PlaceData
+import com.fullaccel.paircarserver.live.application.dto.UsualPlacesData
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionalEventListener
 
@@ -43,4 +48,25 @@ class CrewLiveEventListener(
         )
         liveNotifier.notify(event.recipientMemberIds, LiveEvent(LiveEventType.RIDER_ATTENDANCE_CHANGED, data = data))
     }
+
+    @TransactionalEventListener
+    fun on(event: CrewMemberJoinedEvent) {
+        val data = CrewMemberData(crewId = event.crewId, crewMemberId = event.crewMemberId, nickname = event.nickname)
+        liveNotifier.notify(event.recipientMemberIds, LiveEvent(LiveEventType.CREW_MEMBER_JOINED, data = data))
+    }
+
+    @TransactionalEventListener
+    fun on(event: CrewMemberPlacesChangedEvent) {
+        val data = UsualPlacesData(
+            crewId = event.crewId,
+            crewMemberId = event.crewMemberId,
+            nickname = event.nickname,
+            boardPlace = event.boardPlace?.toData(),
+            alightPlace = event.alightPlace?.toData(),
+            pickupTime = event.pickupTime,
+        )
+        liveNotifier.notify(event.recipientMemberIds, LiveEvent(LiveEventType.RIDER_USUAL_PLACES_CHANGED, data = data))
+    }
+
+    private fun AttendancePlace.toData() = PlaceData(placeId, name, latitude, longitude)
 }

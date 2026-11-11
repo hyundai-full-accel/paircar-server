@@ -56,9 +56,14 @@ class CrewMember(
         this.settlementAgreedAt = Instant.now()
     }
 
-    fun changePlaces(boardPlace: CrewPlace?, alightPlace: CrewPlace?, pickupTime: LocalTime?) {
+    // 실제로 바뀌었으면 true (같은 값을 다시 보내면 알리지 않음)
+    fun changePlaces(boardPlace: CrewPlace?, alightPlace: CrewPlace?, pickupTime: LocalTime?): Boolean {
+        val changed = this.boardPlace?.id != boardPlace?.id ||
+            this.alightPlace?.id != alightPlace?.id ||
+            this.pickupTime != pickupTime
         this.boardPlace = boardPlace
         this.alightPlace = alightPlace
         this.pickupTime = pickupTime
+        return changed
     }
 }

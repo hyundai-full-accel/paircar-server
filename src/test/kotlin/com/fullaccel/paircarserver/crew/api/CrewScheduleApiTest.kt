@@ -3,6 +3,8 @@ package com.fullaccel.paircarserver.crew.api
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fullaccel.paircarserver.IntegrationTest
 import com.fullaccel.paircarserver.crew.application.event.AttendanceChangedEvent
+import com.fullaccel.paircarserver.crew.application.event.CrewMemberJoinedEvent
+import com.fullaccel.paircarserver.crew.application.event.CrewMemberPlacesChangedEvent
 import com.fullaccel.paircarserver.support.bearer
 import com.fullaccel.paircarserver.support.createMemberToken
 import com.fullaccel.paircarserver.support.data
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
+import java.time.LocalTime
 import kotlin.test.assertEquals
 
 // 크루 일정, 평소 탈 곳, 출석. 테스트의 오늘은 2027-01-15 (TestClockConfiguration)
@@ -293,5 +296,41 @@ class CrewScheduleApiTest(
             status { isForbidden() }
             jsonPath("$.error.code") { value("CREW_MEMBER_SELF_ONLY") }
         }
+    }
+
+    @Test
+    fun `새 멤버가 참여하면 차를 등록한 멤버에게 알린다`() {
+        // setUp에서 수아가 초대로 참여함
+        val event = events.stream(CrewMemberJoinedEvent::class.java).toList().single()
+        assertEquals(suaId, event.crewMemberId)
+        assertEquals("수아", event.nickname)
+        assertEquals(listOf(jihoonMemberId), event.recipientMemberIds)
+    }
+
+    @Test
+    fun `평소 탈 곳을 바꾸면 차를 등록한 멤버에게 알리고, 같은 값을 다시 보내면 알리지 않는다`() {
+        repeat(2) {
+            mockMvc.put("/api/crews/$crewId/members/$suaId/places") {
+                bearer(sua)
+                json("""{"boardPlaceId": $gate, "alightPlaceId": $office, "pickupTime": "07:50"}""")
+            }.andExpect { status { isOk() } }
+        }
+
+        val event = events.stream(CrewMemberPlacesChangedEvent::class.java).toList().single()
+        assertEquals(suaId, event.crewMemberId)
+        assertEquals(gate, event.boardPlace?.placeId)
+        assertEquals(office, event.alightPlace?.placeId)
+        assertEquals(LocalTime.of(7, 50), event.pickupTime)
+        assertEquals(listOf(jihoonMemberId), event.recipientMemberIds)
+    }
+
+    @Test
+    fun `운전자가 직접 바꾼 평소 탈 곳은 운전자 본인에게 알리지 않는다`() {
+        mockMvc.put("/api/crews/$crewId/members/$suaId/places") {
+            bearer(jihoon)
+            json("""{"boardPlaceId": $backGate}""")
+        }.andExpect { status { isOk() } }
+
+        assertEquals(emptyList<Long>(), events.stream(CrewMemberPlacesChangedEvent::class.java).toList().single().recipientMemberIds)
     }
 }

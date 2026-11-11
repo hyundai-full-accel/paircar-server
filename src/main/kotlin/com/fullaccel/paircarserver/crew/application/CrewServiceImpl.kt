@@ -3,6 +3,7 @@ package com.fullaccel.paircarserver.crew.application
 import com.fullaccel.paircarserver.car.application.CarService
 import com.fullaccel.paircarserver.crew.application.dto.CrewMemberResult
 import com.fullaccel.paircarserver.crew.application.dto.CrewResult
+import com.fullaccel.paircarserver.crew.application.event.CrewMemberJoinedEvent
 import com.fullaccel.paircarserver.crew.domain.Crew
 import com.fullaccel.paircarserver.crew.domain.CrewMember
 import com.fullaccel.paircarserver.crew.domain.CrewMemberRepository
@@ -10,6 +11,7 @@ import com.fullaccel.paircarserver.crew.domain.CrewRepository
 import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
 import com.fullaccel.paircarserver.member.application.MemberService
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,6 +23,7 @@ class CrewServiceImpl(
     private val crewMemberRepository: CrewMemberRepository,
     private val memberService: MemberService,
     private val carService: CarService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : CrewService {
 
     @Transactional
@@ -41,6 +44,17 @@ class CrewServiceImpl(
             throw BusinessException(ErrorCode.CREW_MEMBER_ALREADY_EXISTS)
         }
         val crewMember = crewMemberRepository.save(CrewMember(crew = crew, member = member))
+        val drivers = carService.memberIdsWithCar(
+            crewMemberRepository.findAllByCrewIdOrderById(crewId).map { it.member.id }.filter { it != memberId },
+        )
+        eventPublisher.publishEvent(
+            CrewMemberJoinedEvent(
+                crewId = crewId,
+                crewMemberId = crewMember.id,
+                nickname = member.nickname,
+                recipientMemberIds = drivers.toList(),
+            ),
+        )
         return CrewMemberResult.from(crewMember, carService.hasCar(memberId))
     }
 

@@ -4,10 +4,14 @@ import com.fullaccel.paircarserver.car.application.CarService
 import com.fullaccel.paircarserver.crew.application.dto.CrewMemberResult
 import com.fullaccel.paircarserver.crew.application.dto.CrewResult
 import com.fullaccel.paircarserver.crew.application.dto.UpdateCrewCommand
+import com.fullaccel.paircarserver.crew.application.event.AttendancePlace
+import com.fullaccel.paircarserver.crew.application.event.CrewMemberPlacesChangedEvent
 import com.fullaccel.paircarserver.crew.domain.CrewMember
+import com.fullaccel.paircarserver.crew.domain.CrewMemberRepository
 import com.fullaccel.paircarserver.crew.domain.SettlementMode
 import com.fullaccel.paircarserver.global.error.BusinessException
 import com.fullaccel.paircarserver.global.error.ErrorCode
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalTime
@@ -18,6 +22,8 @@ class CrewSettingServiceImpl(
     private val crewService: CrewService,
     private val crewPlaceService: CrewPlaceService,
     private val carService: CarService,
+    private val crewMemberRepository: CrewMemberRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) : CrewSettingService {
 
     @Transactional
@@ -51,12 +57,31 @@ class CrewSettingServiceImpl(
     ): CrewMemberResult {
         val crewMember = getCrewMemberOf(crewId, crewMemberId)
         authorizeSelfOrDriver(requesterMemberId, crewMember)
-        crewMember.changePlaces(
+        val changed = crewMember.changePlaces(
             boardPlace = boardPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
             alightPlace = alightPlaceId?.let { crewPlaceService.getPlaceEntity(crewId, it) },
             pickupTime = pickupTime,
         )
+        if (changed) publishPlacesChanged(requesterMemberId, crewMember)
         return CrewMemberResult.from(crewMember, carService.hasCar(crewMember.member.id))
+    }
+
+    // 운전할 수 있는 사람(차를 등록한 멤버)이 다음 운행의 경유지를 다시 정하도록 알림. 바꾼 사람은 뺌
+    private fun publishPlacesChanged(requesterMemberId: Long, crewMember: CrewMember) {
+        val drivers = carService.memberIdsWithCar(
+            crewMemberRepository.findAllByCrewIdOrderById(crewMember.crew.id).map { it.member.id }.filter { it != requesterMemberId },
+        )
+        eventPublisher.publishEvent(
+            CrewMemberPlacesChangedEvent(
+                crewId = crewMember.crew.id,
+                crewMemberId = crewMember.id,
+                nickname = crewMember.member.nickname,
+                boardPlace = crewMember.boardPlace?.let { AttendancePlace(it.id, it.name, it.latitude, it.longitude) },
+                alightPlace = crewMember.alightPlace?.let { AttendancePlace(it.id, it.name, it.latitude, it.longitude) },
+                pickupTime = crewMember.pickupTime,
+                recipientMemberIds = drivers.toList(),
+            ),
+        )
     }
 
     @Transactional

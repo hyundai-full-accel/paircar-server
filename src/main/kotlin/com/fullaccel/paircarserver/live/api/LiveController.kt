@@ -39,6 +39,7 @@ class LiveController(
             "동승자: trip.started, vehicle.location, vehicle.approaching, vehicle.arrived, rider.boarded, driver.delayed, trip.ended. " +
             "운전자: rider.delayed, rider.here, rider.absent, rider.place-changed. " +
             "크루 멤버 모두: rider.attendance-changed (출발 전 출석 변경, data에 serviceDate), detour.confirm-requested. " +
+            "차를 등록한 멤버: crew.member-joined (새 멤버 참여), rider.usual-places-changed (평소 탈 곳, 내릴 곳, 픽업 시각 변경). " +
             "영수증: receipt.issued (내는 사람), receipt.inquiry-created (받는 사람).",
     )
     @SecurityRequirements

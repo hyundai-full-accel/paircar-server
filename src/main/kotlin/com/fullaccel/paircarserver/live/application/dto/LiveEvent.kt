@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 
 // 클라이언트(동승자 웹, 차량 앱)로 보내는 실시간 이벤트. SSE event 이름은 type.value
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,6 +34,10 @@ enum class LiveEventType(@get:JsonValue val value: String) {
 
     // 크루 멤버 모두 (출발 전이라 그날 운전자가 정해지지 않음). 차량 앱이 오늘 태울 사람, 경유지를 다시 정함
     RIDER_ATTENDANCE_CHANGED("rider.attendance-changed"),
+
+    // 크루에서 차를 등록한 멤버(운전할 수 있는 사람)가 받음. 차량 앱이 태울 사람, 평소 경유지를 다시 정함
+    CREW_MEMBER_JOINED("crew.member-joined"),
+    RIDER_USUAL_PLACES_CHANGED("rider.usual-places-changed"),
 
     // 운전자, 동승자 모두
     DETOUR_CONFIRM_REQUESTED("detour.confirm-requested"),
@@ -91,6 +96,21 @@ data class AttendanceData(
     val attending: Boolean,
     val boardPlace: PlaceData?, // 그날 탈 곳 (그날만 바꾼 곳, 없으면 기본 탈 곳)
     val delayMinutes: Int?, // 출발 전에 알린 그날 지각 (분)
+) : LiveEventData
+
+data class CrewMemberData(
+    val crewId: Long,
+    val crewMemberId: Long,
+    val nickname: String,
+) : LiveEventData
+
+data class UsualPlacesData(
+    val crewId: Long,
+    val crewMemberId: Long,
+    val nickname: String,
+    val boardPlace: PlaceData?, // 평소 탈 곳 (없으면 생략)
+    val alightPlace: PlaceData?, // 평소 내릴 곳
+    val pickupTime: LocalTime?, // 평소 픽업 시각 (KST)
 ) : LiveEventData
 
 data class PlaceData(

@@ -67,7 +67,12 @@ sequenceDiagram
     W->>S: POST /api/invites/{code}/members {nickname: "수아"}
     S-->>W: memberId, crewMemberId, token
     Note over W: token을 브라우저에 저장. 이후 로그인 없이 수아로 인식
+    S--)C: crew.member-joined (SSE) "수아님이 크루에 들어왔어요"
+    W->>S: PUT /api/crews/{crewId}/members/{수아}/places {boardPlaceId: 정문, alightPlaceId: 본관, pickupTime}
+    S--)C: rider.usual-places-changed (SSE) 평소 탈 곳, 내릴 곳, 픽업 시각
 ```
+
+- `crew.member-joined`, `rider.usual-places-changed`는 크루에서 차를 등록한 멤버(운전할 수 있는 사람)에게만 갑니다. 바꾼 사람 본인은 받지 않고, 같은 값을 다시 보내면 알리지 않습니다.
 
 - 이미 토큰이 있는 멤버(다른 크루의 운전자 등)는 `POST /api/invites/{code}/join`으로 참여합니다.
 

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="960" viewBox="0 0 1120 960" font-family="Pretendard, &#x27;Apple SD Gothic Neo&#x27;, &#x27;Noto Sans KR&#x27;, &#x27;Malgun Gothic&#x27;, sans-serif"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#666"/></marker></defs><rect width="1120" height="960" fill="#fff"/>
+<text x="40" y="46" font-size="22" font-weight="700" fill="#222" text-anchor="start">[컨테이너] 페어카</text>
+<text x="40" y="72" font-size="14" font-weight="400" fill="#666" text-anchor="start">페어카 안의 실행 단위. 굵은 테두리가 이 저장소(paircar-server)의 범위</text>
+<circle cx="250.0" cy="122" r="26" fill="#08427b" stroke="#052e56" stroke-width="2"/>
+<rect x="150" y="140" width="200" height="90" rx="24" fill="#08427b" stroke="#052e56" stroke-width="2"/>
+<text x="250.0" y="183.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">운전자</text>
+<text x="250.0" y="203.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Person]</text>
+<circle cx="850.0" cy="122" r="26" fill="#08427b" stroke="#052e56" stroke-width="2"/>
+<rect x="750" y="140" width="200" height="90" rx="24" fill="#08427b" stroke="#052e56" stroke-width="2"/>
+<text x="850.0" y="183.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">동승자</text>
+<text x="850.0" y="203.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Person]</text>
+<rect x="60" y="270" width="980" height="470" rx="8" fill="none" stroke="#666" stroke-width="1.5" stroke-dasharray="8 6"/>
+<text x="76" y="726" font-size="14" font-weight="700" fill="#444" text-anchor="start">페어카 [Software System]</text>
+<rect x="110" y="300" width="280" height="140" rx="10" fill="#438dd5" stroke="#2e6295" stroke-width="2"/>
+<text x="250.0" y="345.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">차량 앱</text>
+<text x="250.0" y="365.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Container: Pleos Connect 앱]</text>
+<text x="250.0" y="393.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">탑승 감지, 거리·연비 측정</text>
+<text x="250.0" y="411.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">오프라인 때 모았다 재전송</text>
+<rect x="710" y="300" width="280" height="140" rx="10" fill="#438dd5" stroke="#2e6295" stroke-width="2"/>
+<text x="850.0" y="345.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">동승자 웹</text>
+<text x="850.0" y="365.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Container: React PWA]</text>
+<text x="850.0" y="393.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">초대 참여, 차 도착 시간</text>
+<text x="850.0" y="411.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">출석, 영수증</text>
+<rect x="410" y="460" width="280" height="100" rx="10" fill="#1168bd" stroke="#0b4884" stroke-width="4"/>
+<rect x="596" y="468" width="86" height="22" rx="11" fill="#fff" fill-opacity="0.9"/>
+<text x="639.0" y="484" font-size="12" font-weight="700" fill="#1168bd" text-anchor="middle">이 저장소</text>
+<text x="550.0" y="494.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">게이트웨이</text>
+<text x="550.0" y="514.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Container: nginx]</text>
+<text x="550.0" y="542.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">HTTPS 종료, 요청 ID 부여</text>
+<rect x="410" y="600" width="280" height="120" rx="10" fill="#1168bd" stroke="#0b4884" stroke-width="4"/>
+<rect x="596" y="608" width="86" height="22" rx="11" fill="#fff" fill-opacity="0.9"/>
+<text x="639.0" y="624" font-size="12" font-weight="700" fill="#1168bd" text-anchor="middle">이 저장소</text>
+<text x="550.0" y="635.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">크루 서버</text>
+<text x="550.0" y="655.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Container: Spring Boot, Kotlin]</text>
+<text x="550.0" y="683.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">크루, 운행, 정산 API</text>
+<text x="550.0" y="701.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">SSE, Web Push 발송</text>
+<path d="M800,604 A100.0,14 0 0 1 1000,604 V716 A100.0,14 0 0 1 800,716 Z" fill="#1168bd" stroke="#0b4884" stroke-width="4"/>
+<path d="M800,604 A100.0,14 0 0 0 1000,604" fill="none" stroke="#0b4884" stroke-width="4"/>
+<text x="900.0" y="658.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">DB</text>
+<text x="900.0" y="678.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Container: PostgreSQL 17]</text>
+<text x="900.0" y="706.0" font-size="13" font-weight="400" fill="#fff" text-anchor="middle">크루, 운행, 구간, 영수증</text>
+<rect x="110" y="790" width="280" height="90" rx="10" fill="#999999" stroke="#6b6b6b" stroke-width="2"/>
+<text x="250.0" y="833.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">Pleos Connect</text>
+<text x="250.0" y="853.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[External System]</text>
+<rect x="760" y="790" width="260" height="90" rx="10" fill="#999999" stroke="#6b6b6b" stroke-width="2"/>
+<text x="890.0" y="833.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">브라우저 푸시 서비스</text>
+<text x="890.0" y="853.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[External System]</text>
+<path d="M250,230 L250,298" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="260" y="270" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">사용</text>
+<path d="M850,230 L850,298" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="860" y="270" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">사용</text>
+<path d="M180,440 L180,788" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="190" y="620" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">차량 데이터 읽기</text>
+<path d="M390,400 L480,458" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="450" y="400" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">REST, SSE</text>
+<text x="450" y="417" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">[HTTPS]</text>
+<path d="M710,400 L620,458" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="650" y="400" font-size="13" font-weight="400" fill="#444" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">REST, SSE</text>
+<text x="650" y="417" font-size="13" font-weight="400" fill="#444" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">[HTTPS]</text>
+<path d="M550,560 L550,598" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="560" y="584" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">프록시 [HTTP]</text>
+<path d="M690,660 L798,660" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="744" y="640" font-size="13" font-weight="400" fill="#444" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">읽기, 쓰기</text>
+<text x="744" y="657" font-size="13" font-weight="400" fill="#444" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">[JPA]</text>
+<path d="M600,720 L800,788" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="680" y="772" font-size="13" font-weight="400" fill="#444" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">Web Push</text>
+<text x="680" y="789" font-size="13" font-weight="400" fill="#444" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">[VAPID]</text>
+<path d="M1020,835 L1075,835 L1075,185 L952,185" fill="none" stroke="#666" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="1068" y="500" font-size="13" font-weight="400" fill="#444" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">폰 알림</text>
+<rect x="40" y="920" width="22" height="20" rx="4" fill="#08427b" stroke="#052e56"/>
+<text x="70" y="935" font-size="13" font-weight="400" fill="#444" text-anchor="start">사람</text>
+<rect x="112" y="920" width="22" height="20" rx="4" fill="#1168bd" stroke="#0b4884"/>
+<text x="142" y="935" font-size="13" font-weight="400" fill="#444" text-anchor="start">이 저장소</text>
+<rect x="226" y="920" width="22" height="20" rx="4" fill="#438dd5" stroke="#2e6295"/>
+<text x="256" y="935" font-size="13" font-weight="400" fill="#444" text-anchor="start">다른 저장소</text>
+<rect x="354" y="920" width="22" height="20" rx="4" fill="#999999" stroke="#6b6b6b"/>
+<text x="384" y="935" font-size="13" font-weight="400" fill="#444" text-anchor="start">외부 시스템</text>
+</svg>

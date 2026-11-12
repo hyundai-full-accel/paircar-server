@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="1050" viewBox="0 0 1140 1050" font-family="Pretendard, &#x27;Apple SD Gothic Neo&#x27;, &#x27;Noto Sans KR&#x27;, &#x27;Malgun Gothic&#x27;, sans-serif"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#666"/></marker></defs><rect width="1140" height="1050" fill="#fff"/>
+<text x="40" y="46" font-size="22" font-weight="700" fill="#222" text-anchor="start">[컴포넌트] 크루 서버</text>
+<text x="40" y="72" font-size="14" font-weight="400" fill="#666" text-anchor="start">도메인별 모듈로 나눈 모듈러 모놀리스. 호출은 위에서 아래로만, 위로 알릴 때는 이벤트</text>
+<rect x="400" y="100" width="300" height="80" rx="10" fill="#999999" stroke="#6b6b6b" stroke-width="2"/>
+<text x="550.0" y="138.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">차량 앱, 동승자 웹</text>
+<text x="550.0" y="158.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[Container]</text>
+<rect x="880" y="100" width="220" height="80" rx="10" fill="#999999" stroke="#6b6b6b" stroke-width="2"/>
+<text x="990.0" y="138.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">브라우저 푸시 서비스</text>
+<text x="990.0" y="158.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[External System]</text>
+<rect x="40" y="220" width="1040" height="620" rx="8" fill="none" stroke="#666" stroke-width="1.5" stroke-dasharray="8 6"/>
+<text x="56" y="826" font-size="14" font-weight="700" fill="#444" text-anchor="start">크루 서버 [Container: Spring Boot]</text>
+<rect x="70" y="260" width="260" height="150" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="200.0" y="301.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">global</text>
+<text x="200.0" y="321.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="200.0" y="349.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">공통 응답, 예외</text>
+<text x="200.0" y="367.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">기기 토큰 인증, CORS</text>
+<text x="200.0" y="385.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">요청 로깅 (MDC)</text>
+<text x="200" y="432" font-size="13" font-weight="400" fill="#444" text-anchor="middle">모든 모듈이 사용</text>
+<rect x="400" y="260" width="280" height="100" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="540.0" y="294.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">settlement</text>
+<text x="540.0" y="314.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="540.0" y="342.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">정산 엔진, 영수증, 월 자동 발행</text>
+<rect x="400" y="420" width="280" height="100" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="540.0" y="454.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">trip</text>
+<text x="540.0" y="474.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="540.0" y="502.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">운행, 탑승, 구간</text>
+<rect x="860" y="390" width="200" height="140" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="960.0" y="435.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">live</text>
+<text x="960.0" y="455.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="960.0" y="483.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">SSE 연결, 일회용 티켓</text>
+<text x="960.0" y="501.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">Web Push 발송</text>
+<rect x="300" y="580" width="240" height="100" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="420.0" y="614.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">car</text>
+<text x="420.0" y="634.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="420.0" y="662.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">차량, 연비, 차량별 유가</text>
+<rect x="600" y="580" width="240" height="100" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="720.0" y="605.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">crew</text>
+<text x="720.0" y="625.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="720.0" y="653.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">크루, 초대, 장소</text>
+<text x="720.0" y="671.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">우회 거리, 출석</text>
+<rect x="440" y="720" width="260" height="90" rx="10" fill="#85bbf0" stroke="#5d82a8" stroke-width="2"/>
+<text x="570.0" y="749.0" font-size="17" font-weight="700" fill="#000" text-anchor="middle">member</text>
+<text x="570.0" y="769.0" font-size="12" font-weight="400" fill="#000" text-anchor="middle">[Component]</text>
+<text x="570.0" y="797.0" font-size="13" font-weight="400" fill="#000" text-anchor="middle">멤버, 계좌, 기기 토큰</text>
+<path d="M80,894 A110.0,14 0 0 1 300,894 V966 A110.0,14 0 0 1 80,966 Z" fill="#999999" stroke="#6b6b6b" stroke-width="2"/>
+<path d="M80,894 A110.0,14 0 0 0 300,894" fill="none" stroke="#6b6b6b" stroke-width="2"/>
+<text x="190.0" y="942.0" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">DB</text>
+<text x="190.0" y="962.0" font-size="12" font-weight="400" fill="#fff" text-anchor="middle">[PostgreSQL]</text>
+<path d="M550,180 L550,258" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="562" y="196" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">REST, SSE [HTTPS]</text>
+<text x="562" y="213" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">각 모듈의 api/ 컨트롤러</text>
+<path d="M970,390 L990,182" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="990" y="300" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">Web Push [VAPID]</text>
+<path d="M540,360 L540,418" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M860,485 L682,485" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="770" y="504" font-size="13" font-weight="400" fill="#444" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">조회</text>
+<path d="M470,520 L430,578" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M610,520 L690,578" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M600,630 L542,630" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M420,680 L520,718" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M700,680 L630,718" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M680,300 L910,300 L910,388" fill="none" stroke="#666" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="790" y="292" font-size="13" font-weight="400" fill="#444" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">도메인 이벤트</text>
+<path d="M680,445 L858,445" fill="none" stroke="#666" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="770" y="430" font-size="13" font-weight="400" fill="#444" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">도메인 이벤트</text>
+<text x="770" y="447" font-size="13" font-weight="400" fill="#444" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">(커밋 뒤)</text>
+<path d="M840,600 L960,600 L960,532" fill="none" stroke="#666" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="968" y="580" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">도메인 이벤트</text>
+<path d="M190,840 L190,878" fill="none" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="205" y="864" font-size="13" font-weight="400" fill="#444" text-anchor="start" paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">모든 모듈 [JPA], 각자 자기 테이블만</text>
+<rect x="40" y="1005" width="22" height="20" rx="4" fill="#85bbf0" stroke="#5d82a8"/>
+<text x="70" y="1020" font-size="13" font-weight="400" fill="#444" text-anchor="start">모듈</text>
+<rect x="112" y="1005" width="22" height="20" rx="4" fill="#999999" stroke="#6b6b6b"/>
+<text x="142" y="1020" font-size="13" font-weight="400" fill="#444" text-anchor="start">바깥</text>
+<path d="M184,1015 L220,1015" stroke="#666" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="230" y="1020" font-size="13" font-weight="400" fill="#444" text-anchor="start">호출</text>
+<path d="M268,1015 L304,1015" stroke="#666" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+<text x="314" y="1020" font-size="13" font-weight="400" fill="#444" text-anchor="start">도메인 이벤트</text>
+</svg>
